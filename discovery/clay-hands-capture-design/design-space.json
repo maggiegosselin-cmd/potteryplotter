@@ -1,0 +1,692 @@
+{
+  "problems": [
+    {
+      "name": "A pot is added the moment it exists",
+      "summary": "a potter can make a record for a pot that has just been made, with one wet finger, in a few seconds, without having to decide anything.",
+      "section": "design-space.md#a-pot-is-added-the-moment-it-exists"
+    },
+    {
+      "name": "A pot is moved to its next stage",
+      "summary": "a potter can move a pot on, or put it right if a finger slipped, with one touch or two and without reading much.",
+      "section": "design-space.md#a-pot-is-moved-to-its-next-stage"
+    },
+    {
+      "name": "A photo is added without a clean hand",
+      "summary": "a potter can take a photo of a pot, a failure or a finished piece with one wet finger, and have it land on the right pot without further sorting.",
+      "section": "design-space.md#a-photo-is-added-without-a-clean-hand"
+    },
+    {
+      "name": "A failed pot is kept with its photo",
+      "summary": "a potter can mark a pot failed in a moment and keep a photo of it, the stage where it broke, and later why.",
+      "section": "design-space.md#a-failed-pot-is-kept-with-its-photo"
+    },
+    {
+      "name": "A shelf or kiln hand-in is checked",
+      "summary": "a potter can see what is where, and what is out of their hands, in one glance, and move a whole group in a few touches.",
+      "section": "design-space.md#a-shelf-or-kiln-hand-in-is-checked"
+    },
+    {
+      "name": "A wet finger can drive the screen",
+      "summary": "the controls tolerate a coated, wet or clumsy finger, and what cannot be done then can be done later without loss.",
+      "section": "design-space.md#a-wet-finger-can-drive-the-screen"
+    },
+    {
+      "name": "An entry made with no signal is trusted",
+      "summary": "a potter never wonders whether an entry or photo was kept, and never waits on the network to continue.",
+      "section": "design-space.md#an-entry-made-with-no-signal-is-trusted"
+    },
+    {
+      "name": "A friend logs a first pot unaided",
+      "summary": "a friend who receives a link can install the app and log their first pot with nobody explaining anything, and finds the stages already fit how they work.",
+      "section": "design-space.md#a-friend-logs-a-first-pot-unaided"
+    },
+    {
+      "name": "The app feels like a craft object",
+      "summary": "the app looks and moves like something made by a potter for potters, and is no slower for it.",
+      "section": "design-space.md#the-app-feels-like-a-craft-object"
+    }
+  ],
+  "dimensions": [
+    {
+      "problem": "A pot is added the moment it exists",
+      "name": "How a new pot is started",
+      "section": "design-space.md#how-a-new-pot-is-started",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "Photo first, details later",
+          "description": "The home screen's largest control opens the camera, and the photo taken becomes a new pot at the first stage, with the date, and nothing else asked.",
+          "section": "design-space.md#photo-first-details-later"
+        },
+        {
+          "name": "One tap makes a blank pot",
+          "description": "A single large \"new pot\" control creates a pot at the first stage, dated now, with no photo; the new pot opens so a photo or note can follow.",
+          "section": "design-space.md#one-tap-makes-a-blank-pot"
+        },
+        {
+          "name": "Chips for form and method",
+          "description": "After the new-pot tap, one screen offers large chips for form (mug, bowl, vase, plate, other) and method (hand-built, wheel, cast); one touch on each, or skip.",
+          "section": "design-space.md#chips-for-form-and-method"
+        },
+        {
+          "name": "Copy the last pot",
+          "description": "A control on a pot (or on the home screen, for the latest) makes a new pot with the same form, method, clay and intent, at the first stage.",
+          "section": "design-space.md#copy-the-last-pot"
+        }
+      ],
+      "why_it_matters": "the entrance is the most repeated touch in the app, and potters who only add pots when it is cheap will keep using it; several entrances could coexist."
+    },
+    {
+      "problem": "A pot is added the moment it exists",
+      "name": "How a pot is named and told apart",
+      "section": "design-space.md#how-a-pot-is-named-and-told-apart",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "No name, the photo is the name",
+          "description": "A pot is shown by its latest photo and its form; no name is asked for or shown unless typed.",
+          "section": "design-space.md#no-name-the-photo-is-the-name"
+        },
+        {
+          "name": "Automatic number and form",
+          "description": "The app names a pot by a running number and its form (\"Mug 14\"); the potter can rename it.",
+          "section": "design-space.md#automatic-number-and-form"
+        },
+        {
+          "name": "A name spoken or typed later",
+          "description": "The pot gets its name at a calm moment, by the phone's dictation key or by typing, from a prompt in the catch-up list.",
+          "section": "design-space.md#a-name-spoken-or-typed-later"
+        },
+        {
+          "name": "A number written on the pot",
+          "description": "The app shows the pot's number in very large type on its screen, so it can be written on the foot or on a tag with a pencil or underglaze; the number is used to open the pot later.",
+          "section": "design-space.md#a-number-written-on-the-pot"
+        }
+      ],
+      "why_it_matters": "typing is the hardest thing to do with clay on a finger, yet pots of the same form look alike on a shelf."
+    },
+    {
+      "problem": "A pot is added the moment it exists",
+      "name": "How a batch of pots is entered",
+      "section": "design-space.md#how-a-batch-of-pots-is-entered",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "One record per pot",
+          "description": "Each pot has its own record, always; a batch is several quick adds.",
+          "section": "design-space.md#one-record-per-pot"
+        },
+        {
+          "name": "One record with a count",
+          "description": "A record can say \"x 12\" and move together; separating one off is a later step.",
+          "section": "design-space.md#one-record-with-a-count"
+        },
+        {
+          "name": "A set holding single pots",
+          "description": "A set groups several pot records; moving the set moves each, and any single pot can still leave the set.",
+          "section": "design-space.md#a-set-holding-single-pots"
+        }
+      ],
+      "why_it_matters": "the unit of a record (one pot, a batch, a set) decides how many touches a day of making costs."
+    },
+    {
+      "problem": "A pot is moved to its next stage",
+      "name": "How the move is made",
+      "section": "design-space.md#how-the-move-is-made",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A big next-stage button",
+          "description": "Every pot screen has one very large button that names the next stage (\"Leather hard ->\"); one touch moves the pot.",
+          "section": "design-space.md#a-big-next-stage-button"
+        },
+        {
+          "name": "Swipe the card on",
+          "description": "In a list, swiping a pot card to the side moves it to the next stage.",
+          "section": "design-space.md#swipe-the-card-on"
+        },
+        {
+          "name": "A stage rail to tap",
+          "description": "A rail of the stages sits on the pot screen; touching any stage moves the pot there, so a pot can jump forward or back.",
+          "section": "design-space.md#a-stage-rail-to-tap"
+        },
+        {
+          "name": "Drag along a board",
+          "description": "Pots are cards in columns, one per stage, and a card is dragged to another column.",
+          "section": "design-space.md#drag-along-a-board"
+        }
+      ],
+      "why_it_matters": "this is the repeated action of the app after adding; the way it is made decides how many touches a shelf walk costs."
+    },
+    {
+      "problem": "A pot is moved to its next stage",
+      "name": "How a pot is found to be moved",
+      "section": "design-space.md#how-a-pot-is-found-to-be-moved",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "Recently touched on top",
+          "description": "The home screen lists pots with the most recently touched or longest-waiting first, each as a large card with its next-stage button.",
+          "section": "design-space.md#recently-touched-on-top"
+        },
+        {
+          "name": "A photo grid by stage",
+          "description": "A grid of photos grouped by stage; touching a photo opens the pot.",
+          "section": "design-space.md#a-photo-grid-by-stage"
+        },
+        {
+          "name": "Open the pot from a tag",
+          "description": "A pot's number, or a printed code on a tag stuck to a shelf or bat, is read by the camera or typed on a large number pad to open it.",
+          "section": "design-space.md#open-the-pot-from-a-tag"
+        },
+        {
+          "name": "Search by typing",
+          "description": "A search field finds pots by name, form, clay or glaze.",
+          "section": "design-space.md#search-by-typing"
+        }
+      ],
+      "why_it_matters": "finding the pot costs as many touches as moving it, and similar pots are hard to tell apart."
+    },
+    {
+      "problem": "A pot is moved to its next stage",
+      "name": "How a wrong move is put right",
+      "section": "design-space.md#how-a-wrong-move-is-put-right",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "Undo bar after each move",
+          "description": "After a move, a bar at the bottom says \"Moved to Bone dry. Undo\" for several seconds; the bar is a large target.",
+          "section": "design-space.md#undo-bar-after-each-move"
+        },
+        {
+          "name": "Hold to move",
+          "description": "The move button fills as it is held (about half a second) and moves only on completion; a touch that slides off cancels.",
+          "section": "design-space.md#hold-to-move"
+        },
+        {
+          "name": "Confirm every move",
+          "description": "Touching the button opens a confirm panel with two big buttons.",
+          "section": "design-space.md#confirm-every-move"
+        },
+        {
+          "name": "Edit the history later",
+          "description": "No protection at the moment; every move is a dated line on the pot, editable or deletable at the sink.",
+          "section": "design-space.md#edit-the-history-later"
+        }
+      ],
+      "why_it_matters": "a big target and a slipping wet finger together will produce wrong moves; the cost of putting one right sets how big the targets can be."
+    },
+    {
+      "problem": "A pot is moved to its next stage",
+      "name": "What a move records by itself",
+      "section": "design-space.md#what-a-move-records-by-itself",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Date and stage only",
+          "description": "The move writes the stage and the date, and nothing is asked.",
+          "section": "design-space.md#date-and-stage-only"
+        },
+        {
+          "name": "One optional line after the move",
+          "description": "The move completes at once, then a note field with a dictation key appears for a line that can be ignored.",
+          "section": "design-space.md#one-optional-line-after-the-move"
+        },
+        {
+          "name": "A photo nudge on key stages",
+          "description": "On chosen stages (leather hard, bisqued, finished) the move offers a camera button on the next screen, which can be skipped.",
+          "section": "design-space.md#a-photo-nudge-on-key-stages"
+        },
+        {
+          "name": "A branch question at forks",
+          "description": "At a fork (after bone dry: bisque, or straight to glaze), the move asks one question with two or three large answers.",
+          "section": "design-space.md#a-branch-question-at-forks"
+        }
+      ],
+      "why_it_matters": "what each move asks decides whether it stays one touch; what it records decides how much of the journey survives."
+    },
+    {
+      "problem": "A photo is added without a clean hand",
+      "name": "How the camera is reached",
+      "section": "design-space.md#how-the-camera-is-reached",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "The phone's own camera sheet",
+          "description": "A photo button uses a file input that opens the phone's camera (or its photo picker), and the picture comes back to the app.",
+          "section": "design-space.md#the-phones-own-camera-sheet"
+        },
+        {
+          "name": "A viewfinder inside the app",
+          "description": "The app shows a live camera view with one huge shutter and keeps the shot with no confirm.",
+          "section": "design-space.md#a-viewfinder-inside-the-app"
+        },
+        {
+          "name": "Photos taken outside, picked after",
+          "description": "The potter takes photos with the phone's camera app, then picks them from the photo library inside the app.",
+          "section": "design-space.md#photos-taken-outside-picked-after"
+        }
+      ],
+      "why_it_matters": "the camera route decides speed, offline behaviour and how much of the phone's own camera the potter keeps."
+    },
+    {
+      "problem": "A photo is added without a clean hand",
+      "name": "What the photo attaches to",
+      "section": "design-space.md#what-the-photo-attaches-to",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "The open pot and its stage",
+          "description": "A photo taken from a pot's screen attaches to that pot at its current stage.",
+          "section": "design-space.md#the-open-pot-and-its-stage"
+        },
+        {
+          "name": "The pot just moved",
+          "description": "After a move, the camera button on the next screen attaches the photo to that move.",
+          "section": "design-space.md#the-pot-just-moved"
+        },
+        {
+          "name": "An inbox sorted later",
+          "description": "Every photo lands in an inbox with a time; at the sink the potter drags or taps them onto pots.",
+          "section": "design-space.md#an-inbox-sorted-later"
+        }
+      ],
+      "why_it_matters": "a photo that lands on the wrong pot or the wrong stage is a record that cannot be trusted; extra choosing costs touches."
+    },
+    {
+      "problem": "A photo is added without a clean hand",
+      "name": "How a photo is taken without tapping",
+      "section": "design-space.md#how-a-photo-is-taken-without-tapping",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A countdown shutter",
+          "description": "One touch starts a three- to five-second countdown, then the shot is taken, so the hand can go back to the pot.",
+          "section": "design-space.md#a-countdown-shutter"
+        },
+        {
+          "name": "A spoken word as shutter",
+          "description": "The phone listens for a word (\"now\") and takes the photo.",
+          "section": "design-space.md#a-spoken-word-as-shutter"
+        },
+        {
+          "name": "The volume button as shutter",
+          "description": "The potter uses the phone's own camera app, where the volume buttons take photos (recalled), then picks the photo in the app.",
+          "section": "design-space.md#the-volume-button-as-shutter"
+        },
+        {
+          "name": "Tapping only",
+          "description": "Photos are always taken with a touch on a large shutter.",
+          "section": "design-space.md#tapping-only"
+        }
+      ],
+      "why_it_matters": "a photo of a pot held in the other hand needs the finger the shutter wants."
+    },
+    {
+      "problem": "A failed pot is kept with its photo",
+      "name": "How a failure is marked",
+      "section": "design-space.md#how-a-failure-is-marked",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A failure button on the pot",
+          "description": "A pot screen has a \"failed\" control away from the next-stage button; it opens a panel with a camera button and large stage and cause chips.",
+          "section": "design-space.md#a-failure-button-on-the-pot"
+        },
+        {
+          "name": "Failure photo first",
+          "description": "The camera's shutter has a second control, \"photograph a failure\", which creates or finds the pot, marks it failed at its current stage and keeps the photo.",
+          "section": "design-space.md#failure-photo-first"
+        },
+        {
+          "name": "Cause chips after marking",
+          "description": "After marking, a row of large chips offers causes drawn from the stage map (drying crack, dunting, crawl, pinholes, glaze ran, broke when handled), one touch or skip.",
+          "section": "design-space.md#cause-chips-after-marking"
+        },
+        {
+          "name": "Mark now, explain later",
+          "description": "A failure is marked and photographed; the catch-up list asks for the cause and what to change at a calm moment.",
+          "section": "design-space.md#mark-now-explain-later"
+        }
+      ],
+      "why_it_matters": "Project Memory asks to \"see a photo of the failure\", and failures are found at unplanned moments, often at the kiln."
+    },
+    {
+      "problem": "A shelf or kiln hand-in is checked",
+      "name": "What the first screen shows",
+      "section": "design-space.md#what-the-first-screen-shows",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Stage columns",
+          "description": "Pots are grouped by stage, one stage per row or column, with a count.",
+          "section": "design-space.md#stage-columns"
+        },
+        {
+          "name": "Oldest waiting first",
+          "description": "One list ordered by days in the current stage, longest first, each with a next-stage button.",
+          "section": "design-space.md#oldest-waiting-first"
+        },
+        {
+          "name": "Photo wall with stage badges",
+          "description": "A wall of recent photos, each with a small stage mark.",
+          "section": "design-space.md#photo-wall-with-stage-badges"
+        },
+        {
+          "name": "Handed in and not back",
+          "description": "A strip at the top lists what is out of the potter's hands (with staff for bisque or glaze firing), with days waiting, above the other views.",
+          "section": "design-space.md#handed-in-and-not-back"
+        }
+      ],
+      "why_it_matters": "the maintainer did not say what they want to see first at a shelf or the kiln (see Open questions), so the home screen is the biggest unanswered design choice here."
+    },
+    {
+      "problem": "A shelf or kiln hand-in is checked",
+      "name": "How a firing hand-in is logged",
+      "section": "design-space.md#how-a-firing-hand-in-is-logged",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Select many then move",
+          "description": "A long press (or a select mode) ticks pots; one move button moves all ticked pots to the next stage.",
+          "section": "design-space.md#select-many-then-move"
+        },
+        {
+          "name": "A hand-in session",
+          "description": "A \"hand in for bisque\" mode shows every pot at the stage before bisque with a large check beside each; one button ends the session and moves the checked ones.",
+          "section": "design-space.md#a-hand-in-session"
+        },
+        {
+          "name": "Each pot on its own",
+          "description": "Pots are moved one at a time with the normal next-stage control.",
+          "section": "design-space.md#each-pot-on-its-own"
+        }
+      ],
+      "why_it_matters": "a hand-in or collection moves many pots together, so the per-pot touch count multiplies."
+    },
+    {
+      "problem": "A wet finger can drive the screen",
+      "name": "How big and where the controls are",
+      "section": "design-space.md#how-big-and-where-the-controls-are",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Thumb-zone slab buttons",
+          "description": "Primary controls are tall bars across the bottom of the screen, well above the 44-point minimum; everything else is smaller and higher.",
+          "section": "design-space.md#thumb-zone-slab-buttons"
+        },
+        {
+          "name": "Whole-card targets",
+          "description": "Every card on a list is one target; touching anywhere acts (opens the pot), with only one action per card.",
+          "section": "design-space.md#whole-card-targets"
+        },
+        {
+          "name": "A single huge button per screen",
+          "description": "Every screen has exactly one primary action filling most of it; others are tiny text.",
+          "section": "design-space.md#a-single-huge-button-per-screen"
+        }
+      ],
+      "why_it_matters": "target size trades speed against how much fits on a screen; no source gives a wet-finger size, so it is a choice to test."
+    },
+    {
+      "problem": "A wet finger can drive the screen",
+      "name": "When the entry is made",
+      "section": "design-space.md#when-the-entry-is-made",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A one-touch mark at the bench",
+          "description": "At the bench the only possible action is a one-touch mark (a new pot, or a photo); details come later.",
+          "section": "design-space.md#a-one-touch-mark-at-the-bench"
+        },
+        {
+          "name": "After washing at the sink",
+          "description": "Everything the app can do is meant for clean hands at the sink; the bench has nothing to do.",
+          "section": "design-space.md#after-washing-at-the-sink"
+        },
+        {
+          "name": "A catch-up list for later",
+          "description": "A list of things to finish (unnamed pots, unsorted photos, failures with no cause) is kept, and nothing blocks the potter from ignoring it.",
+          "section": "design-space.md#a-catch-up-list-for-later"
+        }
+      ],
+      "why_it_matters": "the tools survey's forum accounts say that entering things in arrears is the usual app weakness; whether capture happens at the bench at all is unknown (see Open questions)."
+    },
+    {
+      "problem": "An entry made with no signal is trusted",
+      "name": "How saving shows when offline",
+      "section": "design-space.md#how-saving-shows-when-offline",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Silent save with a kept-on-phone mark",
+          "description": "Every entry is saved on the phone at once; a small mark on the card says it is kept on the phone.",
+          "section": "design-space.md#silent-save-with-a-kept-on-phone-mark"
+        },
+        {
+          "name": "A visible queue count",
+          "description": "A badge counts entries not yet sent anywhere and clears when sent.",
+          "section": "design-space.md#a-visible-queue-count"
+        },
+        {
+          "name": "Nothing shown at all",
+          "description": "The app looks the same online and off.",
+          "section": "design-space.md#nothing-shown-at-all"
+        }
+      ],
+      "why_it_matters": "the maintainer works with poor signal; an entry that looks lost, or a pause, will make the potter stop using it."
+    },
+    {
+      "problem": "A friend logs a first pot unaided",
+      "name": "How the link opens",
+      "section": "design-space.md#how-the-link-opens",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Straight into a working app",
+          "description": "The link opens the app's home screen, usable at once, with no welcome page.",
+          "section": "design-space.md#straight-into-a-working-app"
+        },
+        {
+          "name": "A one-screen welcome first",
+          "description": "The link opens a single screen that says in a sentence what it is and offers two big buttons: \"install it\" and \"try it\".",
+          "section": "design-space.md#a-one-screen-welcome-first"
+        },
+        {
+          "name": "Install first, then open",
+          "description": "The link shows only install instructions until the app is installed, and the installed app opens.",
+          "section": "design-space.md#install-first-then-open"
+        }
+      ],
+      "why_it_matters": "the first ten seconds decide whether a friend reaches a pot or closes the tab."
+    },
+    {
+      "problem": "A friend logs a first pot unaided",
+      "name": "How home-screen install is taught",
+      "section": "design-space.md#how-home-screen-install-is-taught",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A picture card for your phone",
+          "description": "A card shows the share-menu or browser-menu steps as a drawing for the phone detected, with a single \"done\" touch.",
+          "section": "design-space.md#a-picture-card-for-your-phone"
+        },
+        {
+          "name": "Install offered after the first pot",
+          "description": "The card appears only after a first pot is logged, when the friend has a reason.",
+          "section": "design-space.md#install-offered-after-the-first-pot"
+        },
+        {
+          "name": "Instructions in the message with the link",
+          "description": "The author sends a one-line install note and a picture with the link.",
+          "section": "design-space.md#instructions-in-the-message-with-the-link"
+        },
+        {
+          "name": "A native install button where there is one",
+          "description": "Where the browser offers an install prompt, a button in the app triggers it with a single touch.",
+          "section": "design-space.md#a-native-install-button-where-there-is-one"
+        }
+      ],
+      "why_it_matters": "the maintainer wants a home-screen install; on an iPhone it is a menu route the friend has to be shown."
+    },
+    {
+      "problem": "A friend logs a first pot unaided",
+      "name": "How the first pot is led",
+      "section": "design-space.md#how-the-first-pot-is-led",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "An empty page with one button",
+          "description": "The first screen has one button, \"your first pot\", and nothing else until a pot exists.",
+          "section": "design-space.md#an-empty-page-with-one-button"
+        },
+        {
+          "name": "A sample pot to play with",
+          "description": "A sample pot (clearly marked) is already there, and moving it a stage and adding a photo teaches the controls; it can be deleted in one touch.",
+          "section": "design-space.md#a-sample-pot-to-play-with"
+        },
+        {
+          "name": "A three-step coach on the first pot",
+          "description": "On the first pot only, three short prompts (photo, move on, add the next) point at the controls.",
+          "section": "design-space.md#a-three-step-coach-on-the-first-pot"
+        }
+      ],
+      "why_it_matters": "a friend who must ask what to touch has failed the no-help test."
+    },
+    {
+      "problem": "A friend logs a first pot unaided",
+      "name": "How a friend's stages are set up",
+      "section": "design-space.md#how-a-friends-stages-are-set-up",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "The default list, edit later",
+          "description": "Every friend starts with the same default stages; renaming, adding and reordering are in a settings page used after the first pot.",
+          "section": "design-space.md#the-default-list-edit-later"
+        },
+        {
+          "name": "Pick a starting kit",
+          "description": "One screen offers two or three kits (hand-build and fire at a studio, wheel, single firing) and the friend picks one in a touch.",
+          "section": "design-space.md#pick-a-starting-kit"
+        },
+        {
+          "name": "Build the list at the start",
+          "description": "The friend writes their own stages before the first pot.",
+          "section": "design-space.md#build-the-list-at-the-start"
+        }
+      ],
+      "why_it_matters": "the stage names have to fit the friend (\"Friends work much like me\", but with their own words), and every question asked before the first pot costs a friend."
+    },
+    {
+      "problem": "A friend logs a first pot unaided",
+      "name": "How a friend's private space begins",
+      "section": "design-space.md#how-a-friends-private-space-begins",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Space made on the phone by the link",
+          "description": "Opening the link makes an empty private space on that phone; no account.",
+          "section": "design-space.md#space-made-on-the-phone-by-the-link"
+        },
+        {
+          "name": "A sign-in after the first pot",
+          "description": "The first pot is logged on the phone; the app then offers to keep it safe with a sign-in.",
+          "section": "design-space.md#a-sign-in-after-the-first-pot"
+        },
+        {
+          "name": "A code the author gives",
+          "description": "The link carries or is followed by a code the author gives each friend, which opens that friend's private space.",
+          "section": "design-space.md#a-code-the-author-gives"
+        }
+      ],
+      "why_it_matters": "each friend keeps their own private records; how a space is made decides whether a first pot needs an account. This depends on a sign-in and storage decision no Hop has made."
+    },
+    {
+      "problem": "The app feels like a craft object",
+      "name": "The look as a whole",
+      "section": "design-space.md#the-look-as-a-whole",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Paper and clay tones",
+          "description": "Warm off-white paper, slip and clay colours (unglazed terracotta, stoneware grey, bisque pink), low contrast edges, one accent.",
+          "section": "design-space.md#paper-and-clay-tones"
+        },
+        {
+          "name": "Photo-led and nearly bare",
+          "description": "Pots' photos are almost the entire screen; text and buttons are small, plain and sit over or beside the image.",
+          "section": "design-space.md#photo-led-and-nearly-bare"
+        },
+        {
+          "name": "Glaze colours as the palette",
+          "description": "The app borrows its colours from the potter's own glazes or from the dominant colours of the pot's photo.",
+          "section": "design-space.md#glaze-colours-as-the-palette"
+        },
+        {
+          "name": "Hand-drawn and ink",
+          "description": "Line drawings of pots as icons and dividers, hand-lettered headings, ink on paper.",
+          "section": "design-space.md#hand-drawn-and-ink"
+        }
+      ],
+      "why_it_matters": "the look is something later variations may differ on, and the brief wants \"a craft object, not a business product\"."
+    },
+    {
+      "problem": "The app feels like a craft object",
+      "name": "How a stage looks at a glance",
+      "section": "design-space.md#how-a-stage-looks-at-a-glance",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Clay-state colour bands",
+          "description": "A colour band follows the state of the clay: dark wet clay, paler leather hard, chalk-white bone dry, pink bisque, glaze colours, finished.",
+          "section": "design-space.md#clay-state-colour-bands"
+        },
+        {
+          "name": "A pot silhouette that fills",
+          "description": "A small pot outline fills with clay colour as the pot moves on, with the stage name beside it.",
+          "section": "design-space.md#a-pot-silhouette-that-fills"
+        },
+        {
+          "name": "Plain stage words",
+          "description": "The stage is its name in text, with no mark.",
+          "section": "design-space.md#plain-stage-words"
+        },
+        {
+          "name": "Stamped seals",
+          "description": "Each stage has a simple stamp-like mark (like a potter's chop), in one ink colour.",
+          "section": "design-space.md#stamped-seals"
+        }
+      ],
+      "why_it_matters": "the same mark that makes the app feel crafted can show a pot's stage without reading, which helps wet-handed use."
+    },
+    {
+      "problem": "The app feels like a craft object",
+      "name": "How an action feels",
+      "section": "design-space.md#how-an-action-feels",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "Thumbprint press",
+          "description": "When a move is made, a thumbprint-like impression settles into the card and the new stage appears; no waiting.",
+          "section": "design-space.md#thumbprint-press"
+        },
+        {
+          "name": "Slow settling motion",
+          "description": "Cards ease in, with soft slow movement, as clay settles.",
+          "section": "design-space.md#slow-settling-motion"
+        },
+        {
+          "name": "A small sound or buzz",
+          "description": "A soft sound or a buzz confirms a move, so the potter need not look.",
+          "section": "design-space.md#a-small-sound-or-buzz"
+        },
+        {
+          "name": "Plain instant response",
+          "description": "Controls change at once with no ornament.",
+          "section": "design-space.md#plain-instant-response"
+        }
+      ],
+      "why_it_matters": "motion and feedback are the cheapest way to make a quick tool feel made, and the costliest way to make it slow."
+    }
+  ]
+}
