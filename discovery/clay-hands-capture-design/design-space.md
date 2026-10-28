@@ -75,9 +75,9 @@ Two things cut across all ten moments. The studio often has poor signal, so ever
 ## Facts the options lean on
 
 - **Touch-target sizes.** WCAG 2.2 success criterion 2.5.8 asks for pointer targets of at least 24 by 24 CSS pixels or enough spacing (digitala11y, Hong Kong OGCIO and testparty pages); Apple's guidelines suggest 44 by 44 points and Material Design 48 by 48 dp (testparty page, uxpatterns glossary). These are minimums for clean fingers. No source read gives a size for a wet or clay-covered finger; options below that go larger are choices, not measured.
-- **Touchscreens and water or clay.** That a capacitive screen misreads water, slip or a clay-coated finger, and that a gloved or coated finger is less precise, is general knowledge (recalled); no page was read on it.
+- **Touchscreens and water.** A touchscreen engineer at a chip maker (Cypress, EE Times, 2012) explains that capacitive screens sense people because the body conducts, and that tap water conducts too: water sitting untouched on the glass can read as a light touch and cause false touches, and a finger touching water joins it electrically, so the screen sees one large blob and may place the touch away from the real fingertip (EE Times page). The same author calls it unrealistic to expect wet-finger accuracy equal to a dry finger, and gives 1 to 2 mm of error as a normal tolerance in a specification; modern phones use more elaborate controllers, and no page read gives figures for them. No page read covers clay, slip or coated or gloved fingers; slip is mostly water, so the water findings plausibly carry over (my reading). No page compared taps with swipes or long presses on a wet screen, so the costs given below for those gestures are reasoning from the position error, not measurements (my reading).
 - **The camera input.** A web page can open the phone's camera through a file input with the `capture` attribute; MDN says the attribute "is not Baseline" because it does not work in some widely used browsers (MDN `capture` page, as shown in search). What it does on a given phone is not verified here.
-- **Home-screen install.** The page and manifest have to be installable; on an iPhone the user adds the page from the share menu, and from iOS 16.4 other browsers than Safari can also add it (mobiloud page, excerpt); a native install prompt appears for Chromium-based browsers (two GitHub issues, excerpt, unverified). The first-run options depend on this split.
+- **Home-screen install.** The page has to pass the browser's installability criteria (a web app manifest among them). On an iPhone, Apple's guide gives the route in Safari: open the share menu, tap Add to Home Screen, leave Open as Web App on, tap Add (Apple Support, "Turn a website into an app in Safari on iPhone"); MDN says the add-to-home-screen route is what installs a web app in Safari on iOS, and that from iOS and iPadOS 16.4 other supporting browsers can install too (MDN, "Installing and uninstalling web apps"). The in-app install button depends on the `beforeinstallprompt` event, which MDN calls non-standard and implemented only in Chromium-based browsers; where it fires, a page can show its own button that opens the browser's install prompt, and it does not fire if the app is already installed or fails the installability criteria (MDN, "Trigger installation from your PWA"). MDN also says that on mobile the install command is generally found in the browser's menu, and that Chrome for Android includes it in its settings menu. So an iPhone friend follows the share-menu route, which no page lets the app start for them (my reading), and a Chromium friend has both the menu and, where the event fires, an in-app button. The first-run options depend on this split.
 - **Other web features the options mention** (Screen Wake Lock, speech recognition, vibration, and the volume-button shutter of a phone's own camera app) are recalled, not read in this run, and each can differ between iPhone and Android (recalled).
 
 ## Candidate stages used in the sketches
@@ -223,7 +223,7 @@ Every pot screen has one very large button that names the next stage ("Leather h
 
 In a list, swiping a pot card to the side moves it to the next stage.
 
-**Easy:** quick in a list with many pots. **Costs:** swiping with a wet or coated finger is less reliable than tapping (recalled); invisible unless taught; can be triggered while scrolling. **Suits:** clean-handed catch-up more than the bench.
+**Easy:** quick in a list with many pots. **Costs:** a wet finger's touch position is less exact and may read as a blob (EE Times page), and a swipe depends on a path rather than a point, so it may misfire more than a tap on a large target (my reading); invisible unless taught; can be triggered while scrolling. **Suits:** clean-handed catch-up more than the bench.
 
 #### A stage rail to tap
 
@@ -514,7 +514,7 @@ What is chosen: how a group of pots is moved in and out of a firing. Options: [S
 
 A long press (or a select mode) ticks pots; one move button moves all ticked pots to the next stage.
 
-**Easy:** any group at any time. **Costs:** selecting with a wet or dusty finger is several touches; long press is less reliable (recalled). **Suits:** moving a handful.
+**Easy:** any group at any time. **Costs:** selecting with a wet or dusty finger is several touches; a long press needs a steady hold on one spot, which a smeared or drifting touch may break (my reading, from the EE Times page on wet-finger error). **Suits:** moving a handful.
 
 #### A hand-in session
 
@@ -649,7 +649,7 @@ The flow below is the shape every option in this problem fits; each box is where
  first pot logged  --- where it is kept: How a friend's private space begins
 ```
 
-The bar for "no help" in the brief's key result is one friend, alone, with only the link and the screens. The fewest touches from the link to a logged pot, with no install, is about three (open, new pot, photo); install adds the share-menu steps on an iPhone (recalled) and a prompt on Chromium browsers (unverified).
+The bar for "no help" in the brief's key result is one friend, alone, with only the link and the screens. The fewest touches from the link to a logged pot, with no install, is about three (open, new pot, photo); install adds the share-menu steps on an iPhone (Apple Support page) and, on Chromium browsers, the browser's menu entry or an in-app button where the install event fires (MDN).
 
 ### How the link opens
 
@@ -702,7 +702,7 @@ A card shows the share-menu or browser-menu steps as a drawing for the phone det
  [ not now ]   [ I did it ]
 ```
 
-**Easy:** step-by-step, in the app. **Costs:** phone and browser detection is imperfect (recalled); text can go out of date as phones change. **Suits:** iPhones, where no install prompt exists (recalled).
+**Easy:** step-by-step, in the app. **Costs:** phone and browser detection is imperfect (recalled); text can go out of date as phones change, and Apple's own steps include a toggle, Open as Web App, that a picture has to show (Apple Support page). **Suits:** iPhones, where the install event an in-app button needs is not implemented and the route is the share menu (MDN, Apple Support pages).
 
 #### Install offered after the first pot
 
@@ -720,7 +720,7 @@ The author sends a one-line install note and a picture with the link.
 
 Where the browser offers an install prompt, a button in the app triggers it with a single touch.
 
-**Easy:** one touch, on browsers that support it (unverified). **Costs:** absent on iPhone Safari (recalled); another path to maintain. **Suits:** friends on Android.
+**Easy:** one touch, on browsers that fire the install event, which MDN says are Chromium-based ones only. **Costs:** the event is not implemented in Safari on iPhone, so an iPhone friend never sees the button (MDN page); it also stays hidden if the app is already installed or fails the installability criteria; another path to maintain. **Suits:** friends on Chromium browsers such as Chrome on Android.
 
 ### How the first pot is led
 
@@ -903,13 +903,18 @@ Controls change at once with no ornament.
 
 ## Sources
 
+Opened and read in full in this run:
+
+- MDN, Trigger installation from your PWA (the `beforeinstallprompt` event, Chromium only): https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/How_to/Trigger_install_prompt
+- MDN, Installing and uninstalling web apps (add to home screen on iOS, iOS 16.4 and other browsers, install commands on mobile): https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing
+- Apple Support, Turn a website into an app in Safari on iPhone (share menu, Add to Home Screen, Open as Web App): https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios
+- EE Times (Erik Anderson, Cypress Semiconductor, 2012), The basics of waterproofing capacitive touchscreens: https://www.eetimes.com/the-basics-of-waterproofing-capacitive-touchscreens/
+
 Read in this run, as search results (the pages were not opened in full):
 
 - WCAG 2.2 success criterion 2.5.8, Target Size (Minimum): https://www.digitala11y.com/understanding-sc-2-5-8-target-size-minimum/ and https://www.digitalpolicy.gov.hk/en/our_work/digital_government/digital_inclusion/accessibility/promulgating_resources/handbook/wcag2aa/9_17_target_size_min.html
 - Touch-target sizes of Apple and Material Design, as summarised: https://testparty.ai/blog/wcag-target-size-guide and https://uxpatterns.dev/glossary/t/touch-targets
 - MDN, the `capture` attribute of the file input: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/capture
-- Progressive web apps on iOS, other browsers adding to the home screen from iOS 16.4: https://www.mobiloud.com/blog/progressive-web-apps-ios/
-- Two GitHub issues noting that the install prompt appears only on Chromium browsers and iPhone users add manually: https://github.com/tokim25/movie-app-repo/issues/66 and https://github.com/jsundram/quartet-log/issues/55
 
 From the repository:
 
@@ -921,10 +926,10 @@ From the repository:
 **What was looked for and not found.**
 
 - Any account of how potters use a phone with wet or clay-covered hands: the only evidence is forum anecdotes quoted in the tools survey (seen as search excerpts), saying hands are often too dirty and potters write up afterwards. No study, no reviews of an app used at the wheel, and no size for a wet-finger touch target were found.
-- Whether touchscreens misread clay-coated or wet fingers, and how a swipe or a long press behaves then: general knowledge only (recalled), no page read.
+- How clay, slip or a coated finger affects a phone screen, and how a swipe or a long press behaves with a wet finger on current phones: the one page read covers water on capacitive screens in general (a 2012 chip-maker article), not clay, not gestures and not current phones.
 - What the browser camera input, the speech input, the Screen Wake Lock and the vibration feature do on the author's phone: not verified.
 - Whether a phone's own volume button takes a photo when the camera is opened from a web page: not verified (recalled for the phone's own camera app).
-- Any account of how a first-time user of a home-screen web app fares without help: only the two issue threads and one article, which describe the install route, not user behaviour.
+- Any account of how a first-time user of a home-screen web app fares without help: the pages read describe the install route (Apple, MDN), not user behaviour.
 
 **What would be wanted, from the maintainer.** Project Memory already holds the answer "I don't understand this question" about what they most want to see at the shelves or the kiln, so these are put plainly:
 
@@ -935,6 +940,6 @@ From the repository:
 5. How will the link reach a friend (a message, in person), and is it acceptable that a friend's records live only on their phone for the first weeks? That bears on the private-space options.
 6. Is it fine if a stage is skipped, given the prompts listed here, or must every stage be recorded?
 
-**Claims that were not verified.** Marked in the text as (recalled) where they come from memory and as (unverified) where a page was read but not checked: install behaviour on iPhone and Chromium; every phone feature named (wake lock, speech, vibration, volume-button shutter, camera code reading); how gestures behave with a coated finger; the idea that a tag or number written on a pot survives firing. Sizes in the sketches (the half-second hold, the countdown of three to five seconds) are starting points to test, not measured values. All moments in the studio-moments table are the author's possible moments (my reading), since no account of the maintainer's own working day was available.
+**Claims that were not verified.** Marked in the text as (recalled) where they come from memory and as (unverified) where a page was read but not checked: every phone feature named (wake lock, speech, vibration, volume-button shutter, camera code reading); how gestures behave with a clay-coated finger, which no page read covers; the idea that a tag or number written on a pot survives firing. Sizes in the sketches (the half-second hold, the countdown of three to five seconds) are starting points to test, not measured values. All moments in the studio-moments table are the author's possible moments (my reading), since no account of the maintainer's own working day was available.
 
 **What would narrow the space** without choosing in this document: a short observed session of the maintainer logging three real pots at the bench and at the sink (for moments M1 to M5); one friend trying the install route on their phone; and the maintainer's answers above.
