@@ -108,7 +108,7 @@ A cross-cutting view of the same table, ordered by how cheap it is to give and h
 
 ## 2. Where friends are likely to differ
 
-The maintainer says of the friends: "Friends work much like me." That is the only account of the friends' ways of working, and it is short: it does not say whether they use the same words for stages, whether they hand-build, or whether they also leave bisque and glaze firing to studio staff (my reading is that "much like" covers their kilns, firings and skipped steps, since the question named those). The maintainer also said: "others' use additional firing methods or fire outside of the studio". It is not clear whether "others" means the friends or other potters generally (my reading: other potters generally, since the friends work much like the author). Either way, firings outside the studio's bisque and glaze are known to exist among potters the author knows.
+The maintainer says of the friends: "Friends work much like me." That is the only account of the friends' ways of working, and it is short: it does not say whether they use the same words for stages, whether they hand-build, or whether they also leave bisque and glaze firing to studio staff (my reading is that "much like" covers their kilns, firings and skipped steps, since the question named those). The maintainer also said: "others' use additional firing methods or fire outside of the studio". It is not clear whether "others" means the friends or other potters generally (my reading: other potters generally, since the friends work much like the author). (Peradapt's reading of the maintainer's words, not confirmed: unclear who 'others' are) Either way, firings outside the studio's bisque and glaze are known to exist among potters the author knows.
 
 The points below are the axes along which potters commonly differ. With friends working much like the author, they are not expected to differ widely, so each axis is a place a friend's habits could diverge in detail, not a known difference. Claims here come from general pottery practice (recalled) unless a source is named.
 
@@ -142,9 +142,9 @@ Because the author's firings are staff-run, the "standing at the kiln" case is m
 6. **By maker's intent**: sets, a commission or gift, tests. Only if the author wants them.
 7. **By state of concern**: cracked or failed pots, to see patterns across them.
 
-The hop that depends on this question ("Pot records and stages") also mentions a weekly shelf walk compared against the stages, so a walk is likely something the author does on a schedule; how long it takes, and whether it happens with the phone in hand, are not known.
+The hop that depends on this question ("Pot records and stages") also mentions a weekly shelf walk compared against the stages, so a walk is likely something the author does on a schedule; how long it takes, and whether it happens with the phone in hand, are not known. (Peradapt's reading of the maintainer's words, not confirmed: assumes a weekly habit you never described)
 
-Things the sources suggest the view should make easy on a phone in a studio with poor signal (the signal and phone constraints are the author's, in Project Memory): finding a pot by a photo more than by a name, since pots of the same form look alike and potters seldom name them; a pot's stage visible at a glance; one-tap moves to the next stage.
+Things the sources suggest the view should make easy on a phone in a studio with poor signal (the signal and phone constraints are the author's, in Project Memory): finding a pot by a photo more than by a name, since pots of the same form look alike and potters seldom name them (Peradapt could not verify this: no source says this); a pot's stage visible at a glance; one-tap moves to the next stage.
 
 ## 4. How glazes and glaze combinations are described
 
