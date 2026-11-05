@@ -1,0 +1,53 @@
+:root {
+  --clay: #b5583a;
+  --clay-dark: #8c3f27;
+  --cream: #f4e6d0;
+  --ink: #2b211b;
+  --ok: #2f6b3a;
+  --bad: #a3271c;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-size: 20px; line-height: 1.35; }
+button, input { font: inherit; }
+.screen {
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) 16px calc(120px + env(safe-area-inset-bottom));
+  max-width: 640px;
+  margin: 0 auto;
+}
+h1 { font-size: 1.8rem; margin: 0 0 12px; }
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 72px; padding: 14px 20px;
+  border: 0; border-radius: 18px; background: var(--clay); color: #fff;
+  font-size: 1.4rem; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer;
+}
+.btn:active { background: var(--clay-dark); }
+.btn:disabled { opacity: .55; }
+.btn.secondary { background: #fff; color: var(--clay-dark); border: 3px solid var(--clay); }
+.btn.small { min-height: 56px; font-size: 1.1rem; }
+.banner { background: #fff; border-radius: 14px; padding: 14px 16px; margin: 12px 0; border-left: 8px solid var(--clay); }
+.banner.error { border-left-color: var(--bad); color: var(--bad); font-weight: 600; }
+.banner.ok { border-left-color: var(--ok); color: var(--ok); font-weight: 700; }
+.banner ol { margin: 8px 0 0; padding-left: 1.3em; }
+.pots { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 14px; }
+.pot { display: flex; gap: 14px; align-items: center; background: #fff; border-radius: 16px; padding: 10px; }
+.pot img { width: 96px; height: 96px; object-fit: cover; border-radius: 12px; background: #ddd; flex: none; }
+.pot .name { font-weight: 700; }
+.pot .when { color: #6b5b50; font-size: .9rem; }
+.empty { text-align: center; color: #6b5b50; margin: 48px 0; }
+.fab-bar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, var(--cream) 30%);
+}
+.fab-bar .btn { max-width: 608px; margin: 0 auto; min-height: 88px; font-size: 1.6rem; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.add { position: fixed; inset: 0; background: var(--cream); overflow-y: auto; z-index: 10; }
+.add .screen { display: grid; gap: 14px; align-content: start; }
+.add .preview { width: 100%; max-height: 45dvh; object-fit: contain; border-radius: 16px; background: #000; }
+.add input[type='text'] { width: 100%; min-height: 64px; padding: 12px 16px; border: 3px solid #cdb89b; border-radius: 14px; background: #fff; }
+.link { background: none; border: 0; color: var(--clay-dark); text-decoration: underline; min-height: 56px; font-size: 1.1rem; cursor: pointer; }
+.hidden-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
