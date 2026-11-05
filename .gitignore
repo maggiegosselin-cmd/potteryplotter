@@ -1,0 +1,3 @@
+__pycache__/
+# Fetched by scripts/vendor.sh (the Dockerfile runs it)
+public/vendor/
