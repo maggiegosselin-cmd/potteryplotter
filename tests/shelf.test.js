@@ -8,6 +8,12 @@ const NOW = Date.UTC(2025, 5, 1, 12);
 
 let nextId = 1;
 
+// A pot at `stage` that has been there for `days` whole days as of NOW.
+function pot(stage, days, extra = {}) {
+  const since = NOW - days * DAY;
+  const history = [{ id: `e${nextId}`, stage, occurredAt: since, enteredAt: since, note: '' }];
+  return { id: nextId++, name: `${stage} pot`, stage, stageSince: since, history, createdAt: NOW - 100 * DAY, ...extra };
+}
 
 test('the strip holds staff and kiln pots only, longest wait first across the three stages', () => {
   const pots = [
