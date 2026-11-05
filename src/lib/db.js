@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { STAGES } from './stages.js';
-import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, restorePot, undoEntry } from './pots.js';
+import { ValidationError, glazeNames } from './glaze.js';
+import { applyFinishing, applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, restorePot, undoEntry } from './pots.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
 // photo as a Blob, so the record and its photo are written in one transaction.
@@ -9,6 +10,8 @@ import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, r
 // Version 3 adds the In bisque kiln and In final firing stage rows (and the new
 // stage order) and gives each pot an `archivedAt` (null = not archived). Pots
 // keep the stage they were in; none is touched except to add that field.
+// Version 4 adds `glazeLayers` and `finishedPhoto` to each pot (empty / none).
+// Nothing is indexed by them, so there is no new table and no new index.
 export const db = new Dexie('pot-log');
 
 db.version(1).stores({
@@ -34,6 +37,17 @@ db.version(3)
   })
   .upgrade(async (tx) => {
     await tx.table('stages').bulkPut(STAGES);
+    await tx.table('pots').toCollection().modify((pot) => {
+      Object.assign(pot, migratePot(pot));
+    });
+  });
+
+db.version(4)
+  .stores({
+    pots: '++id, createdAt, stage, stageSince',
+    stages: 'id, order',
+  })
+  .upgrade(async (tx) => {
     await tx.table('pots').toCollection().modify((pot) => {
       Object.assign(pot, migratePot(pot));
     });
@@ -78,7 +92,7 @@ async function write(fn) {
   try {
     return await fn();
   } catch (err) {
-    if (err instanceof StorageError) throw err;
+    if (err instanceof StorageError || err instanceof ValidationError) throw err;
     if (err && err.message === 'pot did not read back') {
       throw new StorageError('unverified', "The pot could not be confirmed in storage. Please try again.", err);
     }
@@ -196,9 +210,31 @@ export function updateEntry(potId, entryId, patch) {
   );
 }
 
-export function addExamples() {
+/**
+ * Saves the glaze layers and/or the finished photo choice of one pot in one
+ * transaction, so both change or neither does. See applyFinishing for the rules.
+ * Resolves the saved pot; rejects with a ValidationError the potter can read.
+ */
+export function saveFinishing(potId, changes) {
+  return write(() =>
+    db.transaction('rw', db.pots, async () => {
+      const pot = await db.pots.get(potId);
+      if (!pot) throw new ValidationError('This pot is no longer here.');
+      const next = applyFinishing(pot, changes);
+      await db.pots.put(next);
+      return next;
+    }),
+  );
+}
+
+/** Glaze names already used on the other pots, scanned from the pots table when asked. */
+export async function glazeNameSuggestions(excludePotId) {
+  return glazeNames(await db.pots.toArray(), excludePotId);
+}
+
+export function addExamples(photos = {}) {
   return write(async () => {
     const stages = await db.stages.toArray();
-    await db.pots.bulkAdd(examplePots(stages));
+    await db.pots.bulkAdd(examplePots(stages, Date.now(), photos));
   });
 }

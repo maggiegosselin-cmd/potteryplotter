@@ -1,16 +1,17 @@
 <script>
   import { liveQuery } from 'dexie';
   import { db, explainStorageError, addExamples } from '../lib/db.js';
+  import { makeExamplePhotos } from '../lib/samplePhoto.js';
   import { persistence, checkPersistence } from '../lib/persist.js';
   import { swipe } from '../lib/swipe.js';
   import {
-    agoLabel, canArchive, coverPhoto, countByStage, daysInStage, daysLabel, isArchived, isDone, nextStageId, progressOf,
+    agoLabel, canArchive, coverPhoto, countByStage, daysInStage, daysLabel, finishedView, isArchived, isDone, nextStageId, progressOf,
     sortNewestFirst, stageMap,
   } from '../lib/pots.js';
   import InstallHelp from './InstallHelp.svelte';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, notice = '', onadd, onopen, onmove, onarchive, onrestore } = $props();
+  let { stages, notice = '', onadd, onopen, onfinished, onmove, onarchive, onrestore } = $props();
 
   const ARCHIVE = 'archive'; // the filter that opens the archive; no stage has this id
 
@@ -53,6 +54,7 @@
   const archived = $derived((pots || []).filter(isArchived));
   const inArchive = $derived(filter === ARCHIVE);
   const counts = $derived(countByStage(active));
+  const finished = $derived(finishedView(active).counts);
   const chips = $derived(stages.filter((s) => counts.has(s.id)).sort((a, b) => a.order - b.order));
   const shown = $derived(sortNewestFirst(inArchive ? archived : active.filter((p) => !filter || p.stage === filter)));
   const picked = $derived(shown.filter((p) => selected.has(p.id)));
@@ -65,6 +67,10 @@
   $effect(() => {
     if (filter && filter !== ARCHIVE && !counts.has(filter)) filter = null;
   });
+
+  async function tryExamples() {
+    await addExamples(await makeExamplePhotos());
+  }
 
   function pick(next) {
     filter = next;
@@ -137,8 +143,14 @@
     <p class="empty">Loading…</p>
   {:else if pots.length === 0 && !loadError}
     <p class="empty">No pots yet. Tap the big button to log your first one.</p>
-    <button class="link center" onclick={() => addExamples()}>Or try it with some example pots</button>
+    <button class="link center" onclick={tryExamples}>Or try it with some example pots</button>
   {:else}
+    {#if finished.all}
+      <button class="btn secondary small finished-link" onclick={onfinished}>
+        Finished pots ({finished.all}){finished.all - finished.complete ? ` · ${finished.all - finished.complete} need something` : ''} →
+      </button>
+    {/if}
+
     <div class="chips" role="group" aria-label="Show stage">
       <button class="chip" class:on={!filter} onclick={() => pick(null)}>All {active.length}</button>
       {#each chips as s (s.id)}

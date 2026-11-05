@@ -5,11 +5,13 @@
   import { shrinkPhoto } from './lib/shrink.js';
   import PotList from './components/PotList.svelte';
   import AddPot from './components/AddPot.svelte';
+  import FinishedPots from './components/FinishedPots.svelte';
   import PotScreen from './components/PotScreen.svelte';
 
   let stages = $state(null); // the stage rows from the database; null until read
   let adding = $state(false);
   let openId = $state(null);
+  let finishedOpen = $state(false); // the finished-pots view
   let notice = $state('');
   let toast = $state(null); // { text, error?, undo?, photo? }
   let toastTimer = 0;
@@ -124,7 +126,11 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} />
+  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onfinished={() => (finishedOpen = true)} onmove={move} onarchive={archive} onrestore={restore} />
+
+  {#if finishedOpen}
+    <FinishedPots {stages} onback={() => (finishedOpen = false)} onopen={(id) => (openId = id)} />
+  {/if}
 
   {#if openId !== null}
     <PotScreen {stages} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} />

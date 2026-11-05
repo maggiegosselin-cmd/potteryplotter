@@ -119,3 +119,36 @@ h2 { font-size: 1.15rem; margin: 18px 0 4px; color: var(--clay-dark); }
 .toast .msg { flex: 1; min-width: 0; }
 .tbtn { min-height: 64px; min-width: 64px; padding: 8px 14px; border: 0; border-radius: 14px; background: #fff; color: var(--clay-dark); font-weight: 700; font-size: 1.05rem; cursor: pointer; }
 .tbtn.quiet { background: transparent; color: #fff; min-width: 48px; padding: 8px; }
+
+/* Glaze on the pot screen */
+.banner.reminder { border-left-color: #c98a1b; font-weight: 600; }
+.finished-photo { width: 100%; max-height: 40dvh; object-fit: cover; border-radius: 16px; }
+.layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.layer { background: #fff; border-radius: 14px; padding: 12px; display: grid; gap: 8px; }
+.layer-head { display: flex; align-items: center; gap: 10px; }
+.layer-no { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--clay); color: #fff; font-weight: 800; display: grid; place-items: center; }
+.layer .chips { margin: 0; padding: 0; flex-wrap: wrap; overflow: visible; }
+.layer .chip { min-height: 44px; padding: 6px 14px; }
+.layer .chip:disabled { opacity: .4; }
+.layer .chip.remove { margin-left: auto; color: var(--bad); border-color: var(--bad); }
+.layer-actions { display: flex; gap: 8px; }
+.hints .chip { border-style: dashed; }
+.chip.star { justify-self: start; }
+.chip.star.on { background: #c98a1b; border-color: #c98a1b; }
+
+/* Finished pots */
+.search { width: 100%; min-height: 56px; padding: 10px 16px; border: 3px solid #cdb89b; border-radius: 14px; background: #fff; color: var(--ink); }
+.add .chips { flex-wrap: wrap; overflow: visible; }
+.rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px 8px 8px; border: 0; border-radius: 14px; background: #fff; color: var(--ink); text-align: left; cursor: pointer; }
+.row.incomplete { box-shadow: inset 5px 0 0 #c98a1b; }
+.row .thumb { flex: none; width: 56px; height: 56px; border-radius: 10px; overflow: hidden; background: var(--clay); display: grid; place-items: center; }
+.row .thumb.placeholder { background: #d99a7d; }
+.row .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.row .body { flex: 1; min-width: 0; display: grid; }
+.row .name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .glaze { font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .glaze.missing { color: var(--bad); font-style: italic; }
+.row .when { color: #6b5b50; font-size: .85rem; }
+.row .flag { flex: none; max-width: 7.5em; padding: 4px 8px; border-radius: 10px; background: #fbe9c8; color: #7a4f0a; font-size: .8rem; font-weight: 700; text-align: center; }
+.finished-link { margin: 4px 0 8px; min-height: 56px; font-size: 1.05rem; }

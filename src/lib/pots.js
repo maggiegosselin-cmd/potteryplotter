@@ -5,6 +5,11 @@
 //     stage, stageSince, history: [entry, ...], archivedAt }
 // `archivedAt` is null, or the time an ended pot was moved to the archive. It is
 // separate from the stage: an archived pot keeps its end state, photos and history.
+// `glazeLayers` is the glaze, bottom layer first (see glaze.js). `finishedPhoto` is
+// null or a Blob copy of one photo of the pot as it finished, with
+// `finishedPhotoFrom` the id of the history entry it was copied from (null when it
+// came from the photo taken as the pot was added). Both live in this one row, so
+// a glaze change and a photo choice are one write.
 // An entry is { id, stage, occurredAt, enteredAt, note, photo? }.
 //   occurredAt = when the stage really happened (may be back-filled, editable)
 //   enteredAt  = when the entry was typed into the app (never edited)
@@ -12,6 +17,7 @@
 // every change goes through withCurrent() to keep them in step. Time in a
 // stage and weeks of use are counted from occurredAt, never enteredAt.
 import { WAITING_ID } from './stages.js';
+import { FINISHED_STAGE_IDS, ValidationError, cleanLayers, matchesGlaze } from './glaze.js';
 
 export const DAY = 86_400_000;
 
@@ -59,6 +65,10 @@ export function buildPot({ name, clay, notes, photo, width, height, stage, occur
       width: photo ? width : 0,
       height: photo ? height : 0,
       archivedAt: null,
+      glazeLayers: [],
+      // A pot added already finished, with a photo: that photo is the finished one.
+      finishedPhoto: photo && FINISHED_STAGE_IDS.includes(stage) ? photo : null,
+      finishedPhotoFrom: null,
     },
     history,
   );
@@ -66,7 +76,8 @@ export function buildPot({ name, clay, notes, photo, width, height, stage, occur
 
 /**
  * Upgrades a saved pot to the current shape: a version 1 pot (name, photo,
- * createdAt) gets a history, and every pot gets `archivedAt`. The stage a pot is
+ * createdAt) gets a history, and every pot gets `archivedAt`, `glazeLayers` and
+ * `finishedPhoto`. The stage a pot is
  * in is never changed. Safe to run twice.
  */
 export function migratePot(pot) {
@@ -75,7 +86,10 @@ export function migratePot(pot) {
     const entry = makeEntry({ stage: 'formed', occurredAt: pot.createdAt, enteredAt: pot.createdAt });
     next = { ...withCurrent(pot, [entry]), clay: pot.clay || '', notes: pot.notes || '' };
   }
-  return next.archivedAt === undefined ? { ...next, archivedAt: null } : next;
+  if (next.archivedAt === undefined) next = { ...next, archivedAt: null };
+  if (next.glazeLayers === undefined) next = { ...next, glazeLayers: [] };
+  if (next.finishedPhoto === undefined) next = { ...next, finishedPhoto: null, finishedPhotoFrom: null };
+  return next;
 }
 
 export const isArchived = (pot) => !!pot.archivedAt;
@@ -126,7 +140,9 @@ export function applyStage(pot, to, { occurredAt, enteredAt = Date.now(), entryI
 export function undoEntry(pot, entryId) {
   const last = currentEntry(pot);
   if (pot.history.length < 2 || last.id !== entryId) return pot;
-  return withCurrent(pot, pot.history.slice(0, -1));
+  const back = withCurrent(pot, pot.history.slice(0, -1));
+  // A finished photo copied from the entry that is taken back goes with it.
+  return pot.finishedPhotoFrom === entryId ? { ...back, finishedPhoto: null, finishedPhotoFrom: null } : back;
 }
 
 /** Changes the date, note or photo of one history line; enteredAt is left alone. */
@@ -139,7 +155,88 @@ export function editEntry(pot, entryId, patch) {
     if (patch.photo !== undefined) next.photo = patch.photo;
     return next;
   });
-  return withCurrent(pot, history);
+  let next = withCurrent(pot, history);
+  if (patch.photo !== undefined) {
+    const entry = history.find((e) => e.id === entryId);
+    if (patch.photo && entry && FINISHED_STAGE_IDS.includes(entry.stage)) {
+      // A photo taken at finished or flawed becomes the finished photo.
+      next = { ...next, finishedPhoto: patch.photo, finishedPhotoFrom: entryId };
+    } else if (!patch.photo && pot.finishedPhotoFrom === entryId) {
+      next = { ...next, finishedPhoto: null, finishedPhotoFrom: null };
+    }
+  }
+  return next;
+}
+
+export const isFinishedStatus = (pot) => FINISHED_STAGE_IDS.includes(pot.stage);
+
+/**
+ * What a finished pot (Finished, or Finished with a flaw) is still missing:
+ * { glaze, photo } as booleans, or null when the pot is not in a finished status.
+ * Derived from the record every time, never stored, so it cannot go stale.
+ */
+export function finishedGaps(pot) {
+  if (!isFinishedStatus(pot)) return null;
+  return { glaze: !(pot.glazeLayers && pot.glazeLayers.length), photo: !pot.finishedPhoto };
+}
+
+/** "glaze and finished photo", "glaze", ... for a pot's gaps; '' when nothing is missing. */
+export function gapsText(gaps) {
+  const parts = [];
+  if (gaps?.glaze) parts.push('glaze');
+  if (gaps?.photo) parts.push('finished photo');
+  return parts.join(' and ');
+}
+
+/**
+ * One validated change to the glaze and the finished photo, for one write.
+ *   layers:       the whole glaze list (every layer needs a name)
+ *   starEntryId:  a history entry id to copy as the finished photo, or null to remove it
+ * Either or both may be given; nothing is changed unless all of it is valid.
+ * A finished photo only belongs to a pot that is Finished or Finished with a flaw,
+ * and only to a photo that is on that pot's own history.
+ */
+export function applyFinishing(pot, { layers, starEntryId } = {}) {
+  let next = { ...pot };
+  if (layers !== undefined) next.glazeLayers = cleanLayers(layers);
+  if (starEntryId === null) {
+    next = { ...next, finishedPhoto: null, finishedPhotoFrom: null };
+  } else if (starEntryId !== undefined) {
+    if (!isFinishedStatus(pot)) throw new ValidationError('Only a finished pot can have a finished photo.');
+    const entry = pot.history.find((e) => e.id === starEntryId);
+    if (!entry || !entry.photo) throw new ValidationError('That photo is not on this pot.');
+    next = { ...next, finishedPhoto: entry.photo, finishedPhotoFrom: entry.id };
+  }
+  return next;
+}
+
+export const FINISHED_FILTERS = ['all', 'glaze', 'photo', 'complete'];
+
+/**
+ * The finished-pots view: pots in a finished status that are not archived, each
+ * with its gaps, those missing something first (newest first within each group).
+ * `filter` is one of FINISHED_FILTERS ('glaze' = no glaze, 'photo' = no finished
+ * photo); `query` matches any layer's glaze name. Counts ignore the search text.
+ */
+export function finishedView(pots, { filter = 'all', query = '' } = {}) {
+  const all = sortNewestFirst(pots.filter((p) => !isArchived(p) && isFinishedStatus(p))).map((pot) => {
+    const gaps = finishedGaps(pot);
+    return { pot, gaps, incomplete: gaps.glaze || gaps.photo };
+  });
+  const counts = {
+    all: all.length,
+    glaze: all.filter((r) => r.gaps.glaze).length,
+    photo: all.filter((r) => r.gaps.photo).length,
+    complete: all.filter((r) => !r.incomplete).length,
+  };
+  const keep = {
+    all: () => true,
+    glaze: (r) => r.gaps.glaze,
+    photo: (r) => r.gaps.photo,
+    complete: (r) => !r.incomplete,
+  }[filter] || (() => true);
+  const rows = all.filter((r) => keep(r) && matchesGlaze(r.pot, query));
+  return { rows: [...rows.filter((r) => r.incomplete), ...rows.filter((r) => !r.incomplete)], counts };
 }
 
 export function daysInStage(pot, now = Date.now()) {
@@ -187,20 +284,33 @@ export function countByStage(pots) {
   return counts;
 }
 
-/** Fictional pots, no photos, for trying the app out. Two of them are archived. */
-export function examplePots(stages, now = Date.now()) {
-  // [name, clay, stage, days in that stage, days since added, archived]
+/**
+ * Fictional pots for trying the app out. Two of them are archived. Some finished
+ * pots have glaze and a finished photo, some only one of them, some neither, so
+ * the finished-pots view shows its gaps. `photos` maps a colour name to a Blob
+ * (see samplePhoto.js); without it the example pots have no photos.
+ */
+export function examplePots(stages, now = Date.now(), photos = {}) {
+  const layer = (id, name, coverage = '', method = '') => ({ id, name, coverage, method });
+  // [name, clay, stage, days in that stage, days since added, archived, extras]
+  // extras: glaze (bottom first), photo (a colour for the photo at this stage), star (the photo is the finished one)
   const specs = [
     ['Pinch bowl', 'Speckled buff', 'bisque_kiln', 2, 0],
     ['Wedged lump', 'Porcelain', 'lump', 1, 1],
     ['Tall mug', 'Stoneware', 'formed', 2, 2],
-    ['Tall vase', 'Stoneware', 'glazed', 3, 3],
+    ['Tall vase', 'Stoneware', 'glazed', 3, 3, false, { glaze: [layer('g1', 'Celadon', 'all', 'dip')] }],
     ['Coil planter', 'Terracotta', 'bisque_fired', 4, 6],
     ['Slab vase', 'Stoneware', 'bone_dry', 12, 8],
     ['Mug set', 'Stoneware', 'final_firing', 2, 9],
     ['Tea set cup', 'Porcelain', 'waiting_staff', 9, 14],
-    ['Spoon rest', 'Stoneware', 'glazed', 15, 18],
-    ['Teapot', 'Stoneware', 'finished', 5, 21],
+    ['Celadon bowl', 'Porcelain', 'finished', 6, 12, false, { glaze: [layer('g2', 'Celadon', 'all', 'dip')], photo: 'teal', star: true }],
+    ['Ash jar', 'Stoneware', 'flawed', 4, 16, false, {
+      glaze: [layer('g3', 'Tenmoku', 'all', 'dip'), layer('g4', 'Ash', 'outside', 'brush')], photo: 'brown', star: true,
+    }],
+    ['Spoon rest', 'Stoneware', 'glazed', 15, 18, false, { glaze: [layer('g5', 'Tenmoku', 'all', 'dip'), layer('g6', 'Shino white', 'rim', 'brush')] }],
+    ['Teapot', 'Stoneware', 'finished', 5, 21, false, { photo: 'teal' }],
+    ['Rim cup', 'Stoneware', 'finished', 8, 25, false, { glaze: [layer('g7', 'Shino white', 'all', 'dip'), layer('g8', 'Iron red', 'rim', 'brush')] }],
+    ['Tea bowl', 'Stoneware', 'flawed', 11, 30, false, { photo: 'brown', star: true }],
     ['Bud vase', 'Porcelain', 'reclaimed', 10, 28],
     ['Serving dish', 'Speckled buff', 'finished', 3, 40, true],
     ['Cracked jar', 'Stoneware', 'failed', 20, 55, true],
@@ -208,7 +318,7 @@ export function examplePots(stages, now = Date.now()) {
   // Where a pot that is not on the path (or is waiting) came from.
   const from = { waiting_staff: 'bone_dry', failed: 'leather_hard', reclaimed: 'formed' };
   const path = pathStages(stages);
-  return specs.map(([name, clay, stage, days, added, archived], i) => {
+  return specs.map(([name, clay, stage, days, added, archived, extras = {}], i) => {
     const entered = now - added * DAY - i * 60_000;
     const since = now - days * DAY;
     const upto = from[stage] || stage;
@@ -219,10 +329,20 @@ export function examplePots(stages, now = Date.now()) {
         stage: id,
         occurredAt: k === steps.length - 1 ? since : since - (steps.length - 1 - k) * 3 * DAY,
         enteredAt: entered,
+        id: `${name}-${id}`,
       }),
     );
+    const photo = extras.photo ? photos[extras.photo] || null : null;
+    if (photo) history[history.length - 1].photo = photo;
+    const starred = photo && extras.star;
     return withCurrent(
-      { name, clay, notes: '', createdAt: entered, photo: null, photoType: '', width: 0, height: 0, archivedAt: archived ? now - 2 * DAY : null },
+      {
+        name, clay, notes: '', createdAt: entered, photo: null, photoType: '', width: 0, height: 0,
+        archivedAt: archived ? now - 2 * DAY : null,
+        glazeLayers: extras.glaze || [],
+        finishedPhoto: starred ? photo : null,
+        finishedPhotoFrom: starred ? history[history.length - 1].id : null,
+      },
       history,
     );
   });
