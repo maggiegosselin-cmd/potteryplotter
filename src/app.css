@@ -190,6 +190,30 @@ h3 { font-size: 1rem; margin: 12px 0 2px; color: var(--clay-dark); }
 .glaze-name { padding: 4px 6px; margin: 0; min-height: 40px; border: 0; background: none; color: var(--clay-dark); font-weight: 700; text-decoration: underline; font-size: inherit; cursor: pointer; }
 .filter-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 
+/* Install guide: one big card per step */
+.guide { z-index: 20; }
+.guide-screen { display: grid; gap: 14px; align-content: start; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+.guide-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.progress { display: flex; gap: 8px; flex: 1; }
+.progress .dot { flex: 1; height: 10px; border-radius: 5px; background: #d9c6a6; }
+.progress .dot.on { background: var(--clay); }
+.guide .sub { margin: 0; }
+.guide-text { margin: 0; font-size: 1.25rem; }
+.guide-nav { display: grid; gap: 12px; margin-top: 6px; }
+.guide-nav .btn { min-height: 88px; font-size: 1.6rem; }
+.guide-nav .btn.secondary { min-height: 64px; font-size: 1.2rem; order: 2; }
+
+/* First-pot coach */
+.coach { background: #fff; border-radius: 18px; padding: 14px 16px; border-left: 8px solid var(--clay); box-shadow: 0 6px 18px rgba(0, 0, 0, .2); display: grid; gap: 8px; }
+.coach.float { position: fixed; left: 12px; right: 12px; bottom: calc(124px + env(safe-area-inset-bottom)); z-index: 5; max-width: 616px; margin: 0 auto; }
+.coach strong { font-size: 1.15rem; }
+.coach p { margin: 0; }
+.coach-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.coach-actions .btn, .coach-actions .link { width: auto; flex: 1; min-height: 56px; font-size: 1.05rem; }
+.coach-ring { outline: 5px solid #e0a23a; outline-offset: 3px; animation: ring 1.6s ease-in-out infinite; }
+@keyframes ring { 50% { outline-color: rgba(224, 162, 58, .35); } }
+@media (prefers-reduced-motion: reduce) { .coach-ring { animation: none; } }
+
 /* Copy status in the header: how old the last copy on the server is */
 .copy-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 8px; font-size: .95rem; }
 .copy-age { color: var(--ok); font-weight: 600; }
