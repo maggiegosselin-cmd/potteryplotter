@@ -11,7 +11,7 @@
   import CopyStatus from './CopyStatus.svelte';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, notice = '', onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished } = $props();
+  let { stages, notice = '', onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished, onexport } = $props();
 
   const ARCHIVE = 'archive'; // the filter that opens the archive; no stage has this id
 
@@ -151,6 +151,7 @@
     <button class="link center" onclick={() => addExamples()}>Or try it with some example pots</button>
   {:else}
     <button class="btn secondary small finished-link" onclick={onfinished}>🖼 Finished pots</button>
+    <button class="btn secondary small finished-link" onclick={onexport}>Export all pots</button>
     <div class="chips" role="group" aria-label="Show stage">
       <button class="chip" class:on={!filter} onclick={() => pick(null)}>All {active.length}</button>
       {#each chips as s (s.id)}
