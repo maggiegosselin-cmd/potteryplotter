@@ -60,6 +60,10 @@ h2 { font-size: 1.15rem; margin: 18px 0 4px; color: var(--clay-dark); }
 .chip.on { background: var(--clay); border-color: var(--clay); color: #fff; font-weight: 700; }
 .chip.archive { border-style: dashed; }
 .chip.archive.on { border-style: solid; }
+.stage-section { margin-top: 18px; }
+.stage-head { display: flex; align-items: baseline; gap: 10px; margin: 0; padding: 6px 2px; font-size: 1.1rem; border-bottom: 2px solid #cdb89b; }
+.stage-count { min-width: 1.6em; padding: 0 8px; border-radius: 12px; background: var(--clay); color: #fff; font-size: .9rem; text-align: center; }
+.stage-wait { margin-left: auto; font-size: .9rem; font-weight: 400; color: #6b5b50; }
 .cards { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 14px; }
 .swipe-row { position: relative; border-radius: 18px; background: #e7d3b3; overflow: hidden; }
 .reveal { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--clay-dark); opacity: calc(var(--pull, 0) * 1.4); }
