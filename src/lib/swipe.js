@@ -2,7 +2,8 @@
 // using pointer events (one code path for finger, pen and mouse).
 // The card keeps `touch-action: pan-y`, so vertical scrolling still works.
 //
-// options: { enabled, onswipe(), onlongpress(), onmove?(dx) }
+// options: { enabled, onswipe(), onlongpress(), onmove?(dx), sideways? }
+// `sideways: false` drops the swipe: a sideways drag just cancels the long press.
 // A tap is left to the normal click event; `swallowClick` tells the click
 // handler to ignore the click that follows a swipe or long press.
 export const SWIPE_MIN_PX = 110; // wide, so a clumsy drag does not move a pot
@@ -65,6 +66,12 @@ export function swipe(node, options) {
         return;
       }
       if (Math.abs(mx) <= SLOP_PX) return;
+      if (opts.sideways === false) {
+        tracking = false;
+        suppress = true; // a sideways drag is not a tap
+        clear();
+        return;
+      }
       dragging = true;
       clear();
       node.setPointerCapture?.(e.pointerId);

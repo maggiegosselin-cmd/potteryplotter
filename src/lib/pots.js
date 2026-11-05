@@ -143,6 +143,7 @@ export function editEntry(pot, entryId, patch) {
 }
 
 export function daysInStage(pot, now = Date.now()) {
+  if (!Number.isFinite(pot.stageSince)) return 0; // no date: counts as just arrived, so it sorts last
   return Math.max(0, Math.floor((now - pot.stageSince) / DAY));
 }
 
@@ -179,6 +180,61 @@ export function progressOf(pot, stages) {
 export function coverPhoto(pot) {
   for (let i = pot.history.length - 1; i >= 0; i--) if (pot.history[i].photo) return pot.history[i].photo;
   return pot.photo || null;
+}
+
+/**
+ * How long a pot has waited before its tile gets a clay-toned edge. Held as data,
+ * longest threshold last, so the rule can be tuned without touching the display.
+ */
+export const WAIT_CUES = [
+  { minDays: 7, level: 'long' },
+  { minDays: 14, level: 'longer' },
+];
+
+/** The cue level for a number of days in a stage ('' when the wait is still short). */
+export function waitLevel(days, cues = WAIT_CUES) {
+  let level = '';
+  for (const cue of cues) if (days >= cue.minDays) level = cue.level;
+  return level;
+}
+
+/** A pot is on the shelf walk unless it has ended (an end state, or Finished). */
+export const inWalk = (pot, stages) => !isDone(stageMap(stages).get(pot.stage));
+
+/**
+ * Groups pots by their current stage for the photo wall. Returns
+ * [{ stage, pots, maxDays }]: sections ordered by their longest-waiting pot
+ * (ties: the stage's own order), and pots inside a section longest-waiting first
+ * (ties: added earliest, then id). A pot with no stage date counts as 0 days.
+ */
+export function groupByStage(pots, stages, now = Date.now()) {
+  const map = stageMap(stages);
+  const groups = new Map();
+  for (const pot of pots) {
+    let group = groups.get(pot.stage);
+    if (!group) {
+      const stage = map.get(pot.stage) || { id: pot.stage, label: String(pot.stage), order: Infinity };
+      group = { stage, pots: [], maxDays: 0 };
+      groups.set(pot.stage, group);
+    }
+    group.pots.push(pot);
+    group.maxDays = Math.max(group.maxDays, daysInStage(pot, now));
+  }
+  const waited = (pot) => daysInStage(pot, now);
+  for (const group of groups.values()) {
+    group.pots.sort((a, b) => waited(b) - waited(a) || a.createdAt - b.createdAt || (a.id ?? 0) - (b.id ?? 0));
+  }
+  return [...groups.values()].sort((a, b) => b.maxDays - a.maxDays || a.stage.order - b.stage.order || 0);
+}
+
+/** The shelf walk: pots still in progress, grouped and ordered by groupByStage. Ended pots are left out. */
+export function shelfWalk(pots, stages, now = Date.now()) {
+  return groupByStage(pots.filter((p) => inWalk(p, stages)), stages, now);
+}
+
+/** Select-all for one section: the ids already picked plus every pot in the group. */
+export function selectGroup(selected, group) {
+  return new Set([...selected, ...group.pots.map((p) => p.id)]);
 }
 
 export function countByStage(pots) {

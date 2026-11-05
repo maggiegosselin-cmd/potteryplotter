@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { STAGES } from '../src/lib/stages.js';
 import {
   DAY, agoLabel, applyStage, archivePot, buildPot, canArchive, countByStage, daysInStage, editEntry, endStages, examplePots,
-  fromDateInput, isArchived, migratePot, nextStageId, pathStages, progressOf, restorePot, sortNewestFirst, toDateInput, undoEntry,
+  fromDateInput, groupByStage, inWalk, isArchived, migratePot, nextStageId, pathStages, progressOf, restorePot, selectGroup, shelfWalk, sortNewestFirst, toDateInput, undoEntry, waitLevel,
 } from '../src/lib/pots.js';
 import { swipeThreshold } from '../src/lib/swipe.js';
 
@@ -158,4 +158,60 @@ test('dates round-trip through the date input form', () => {
 test('a swipe needs a wide drag', () => {
   assert.equal(swipeThreshold(200), 110);
   assert.ok(swipeThreshold(600) > 200);
+});
+
+const withId = (pots) => pots.map((p, i) => ({ ...p, id: i + 1 }));
+
+test('shelf walk: sections lead with the stage holding the longest-waiting pot, tiles longest-waiting first', () => {
+  const pots = withId(examplePots(STAGES, NOW));
+  const sections = shelfWalk(pots.filter((p) => !isArchived(p)), STAGES, NOW);
+  assert.equal(sections[0].stage.id, 'glazed'); // Spoon rest, 15 days
+  assert.equal(sections[0].maxDays, 15);
+  assert.deepEqual(sections[0].pots.map((p) => p.name), ['Spoon rest', 'Tall vase']);
+  const maxes = sections.map((s) => s.maxDays);
+  assert.deepEqual(maxes, [...maxes].sort((a, b) => b - a));
+  for (const s of sections) {
+    const days = s.pots.map((p) => daysInStage(p, NOW));
+    assert.deepEqual(days, [...days].sort((a, b) => b - a));
+  }
+});
+
+test('shelf walk: equal waits fall back to stage order, then added date; a missing stage date sorts last', () => {
+  const a = { ...buildPot({ stage: 'formed', now: NOW - 5 * DAY, stages: STAGES, occurredAt: NOW - 3 * DAY }), id: 1, name: 'a' };
+  const b = { ...buildPot({ stage: 'formed', now: NOW - 9 * DAY, stages: STAGES, occurredAt: NOW - 3 * DAY }), id: 2, name: 'b' };
+  const c = { ...buildPot({ stage: 'formed', now: NOW, stages: STAGES }), id: 3, name: 'c', stageSince: undefined };
+  const d = { ...buildPot({ stage: 'lump', now: NOW, stages: STAGES, occurredAt: NOW - 3 * DAY }), id: 4, name: 'd' };
+  const sections = shelfWalk([a, b, c, d], STAGES, NOW);
+  assert.deepEqual(sections.map((s) => s.stage.id), ['lump', 'formed']); // 3 days each: lump comes first on the path
+  assert.deepEqual(sections[1].pots.map((p) => p.name), ['b', 'a', 'c']);
+});
+
+test('shelf walk: finished and ended pots are not in it, and the waiting state is', () => {
+  const pots = withId(examplePots(STAGES, NOW));
+  const sections = shelfWalk(pots, STAGES, NOW);
+  const ids = sections.map((s) => s.stage.id);
+  for (const gone of ['finished', 'failed', 'reclaimed', 'flawed', 'abandoned', 'given']) assert.ok(!ids.includes(gone), gone);
+  assert.ok(ids.includes('waiting_staff'));
+  assert.equal(inWalk(pots.find((p) => p.stage === 'finished'), STAGES), false);
+  // chosen by their own chip, ended pots are grouped like any others
+  const failed = groupByStage(pots.filter((p) => p.stage === 'failed'), STAGES, NOW);
+  assert.equal(failed.length, 1);
+  assert.equal(failed[0].pots[0].name, 'Cracked jar');
+});
+
+test('select-all ticks the whole group and adds to what is already picked', () => {
+  const pots = withId(examplePots(STAGES, NOW));
+  const sections = shelfWalk(pots, STAGES, NOW);
+  const glazed = sections.find((s) => s.stage.id === 'glazed');
+  assert.deepEqual([...selectGroup(new Set(), glazed)].sort(), glazed.pots.map((p) => p.id).sort());
+  const other = sections.find((s) => s.stage.id === 'bone_dry');
+  const both = selectGroup(selectGroup(new Set(), glazed), other);
+  assert.equal(both.size, glazed.pots.length + other.pots.length);
+});
+
+test('long waits get a cue level from data', () => {
+  assert.equal(waitLevel(3), '');
+  assert.equal(waitLevel(7), 'long');
+  assert.equal(waitLevel(20), 'longer');
+  assert.equal(waitLevel(5, [{ minDays: 5, level: 'x' }]), 'x');
 });

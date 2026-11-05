@@ -4,8 +4,8 @@
   import { persistence, checkPersistence } from '../lib/persist.js';
   import { swipe } from '../lib/swipe.js';
   import {
-    agoLabel, canArchive, coverPhoto, countByStage, daysInStage, daysLabel, isArchived, isDone, nextStageId, progressOf,
-    sortNewestFirst, stageMap,
+    canArchive, coverPhoto, countByStage, daysInStage, daysLabel, groupByStage, isArchived, isDone, nextStageId, selectGroup,
+    shelfWalk, stageMap, waitLevel,
   } from '../lib/pots.js';
   import InstallHelp from './InstallHelp.svelte';
   import Silhouette from './Silhouette.svelte';
@@ -20,7 +20,6 @@
   let filter = $state(null); // a stage id, ARCHIVE, or null for every pot that is not archived
   let selecting = $state(false);
   let selected = $state(new Set());
-  let dragging = $state({}); // pot id -> 0..1, how far a card has been pulled
 
   $effect(() => {
     checkPersistence();
@@ -54,7 +53,11 @@
   const inArchive = $derived(filter === ARCHIVE);
   const counts = $derived(countByStage(active));
   const chips = $derived(stages.filter((s) => counts.has(s.id)).sort((a, b) => a.order - b.order));
-  const shown = $derived(sortNewestFirst(inArchive ? archived : active.filter((p) => !filter || p.stage === filter)));
+  // The walk leaves out finished and ended pots; they show only under their own chip or Archive.
+  const sections = $derived(
+    inArchive ? groupByStage(archived, stages) : filter ? groupByStage(active.filter((p) => p.stage === filter), stages) : shelfWalk(active, stages),
+  );
+  const shown = $derived(sections.flatMap((g) => g.pots));
   const picked = $derived(shown.filter((p) => selected.has(p.id)));
   const toStaff = $derived(picked.filter((p) => map.get(p.stage)?.viaWaiting));
   const afterHandIn = $derived(picked.filter((p) => map.get(p.stage)?.kind === 'waiting'));
@@ -71,15 +74,15 @@
     stopSelecting();
   }
 
-  function advance(pot) {
-    const to = nextStageId(pot, stages);
-    if (to) onmove([{ pot, to }]);
-  }
-
   function startSelecting(pot) {
     selecting = true;
     selected = new Set([pot.id]);
     navigator.vibrate?.(30);
+  }
+
+  function selectAll(group) {
+    selected = selectGroup(selecting ? selected : new Set(), group);
+    selecting = true;
   }
 
   function tap(pot) {
@@ -117,7 +120,7 @@
 
 <main class="screen" class:selecting>
   <h1>My pots</h1>
-  <p class="sub">Newest first. Swipe a card to move it on; press and hold to pick several.</p>
+  <p class="sub">Longest-waiting first, stage by stage. Tap a pot to open it; press and hold, or use Select all, to pick several.</p>
 
   {#if notice}
     <div class="banner ok" role="status">{notice}</div>
@@ -155,55 +158,47 @@
       </p>
     {/if}
 
-    <ul class="cards">
-      {#each shown as pot (pot.id)}
-        {@const stage = map.get(pot.stage)}
-        {@const next = nextStageId(pot, stages)}
-        <li class="swipe-row" style:--pull={dragging[pot.id] || 0}>
-          <div class="reveal" aria-hidden="true">{next ? `→ ${map.get(next).label}` : 'Nothing further'}</div>
-          <div
-            class="card"
-            class:selected={selected.has(pot.id)}
-            class:done={isDone(stage)}
-            role="button"
-            tabindex="0"
-            aria-label="{pot.name || `Pot ${pot.id}`}, {stage?.label}, {daysLabel(daysInStage(pot))}"
-            aria-pressed={selecting ? selected.has(pot.id) : undefined}
-            onclick={() => tap(pot)}
-            onkeydown={(e) => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), tap(pot))}
-            use:swipe={{
-              enabled: !selecting,
-              onswipe: () => advance(pot),
-              onlongpress: () => startSelecting(pot),
-              onmove: (v) => (dragging[pot.id] = v),
-            }}
-          >
-            <div class="photo" class:placeholder={!pot.url}>
-              {#if pot.url}
-                <img src={pot.url} alt="" loading="lazy" draggable="false" />
-              {:else}
-                <Silhouette progress={1} size={64} muted />
-              {/if}
-              {#if selecting}<span class="tick">{selected.has(pot.id) ? '✓' : ''}</span>{/if}
-            </div>
-            <div class="info">
-              <div class="name">{pot.name || `Pot ${pot.id}`}</div>
-              <div class="stage">{stage?.label} · {daysLabel(daysInStage(pot))}</div>
-              <div class="when">{inArchive ? `archived ${agoLabel(pot.archivedAt)} · ` : ''}added {agoLabel(pot.createdAt)}{pot.clay ? ` · ${pot.clay}` : ''}</div>
-              {#if !selecting && !inArchive && canArchive(pot, stages)}
-                <button
-                  class="card-btn"
-                  onpointerdown={(e) => e.stopPropagation()}
-                  onkeydown={(e) => e.stopPropagation()}
-                  onclick={(e) => { e.stopPropagation(); onarchive([pot]); }}
-                >Move to archive</button>
-              {/if}
-            </div>
-            <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} />
-          </div>
-        </li>
-      {/each}
-    </ul>
+    {#each sections as group (group.stage.id)}
+      <section class="shelf" aria-label={group.stage.label}>
+        <header class="shelf-head">
+          <h2>{group.stage.label} <span class="shelf-count">{group.pots.length}</span></h2>
+          <span class="shelf-wait">longest {daysLabel(group.maxDays)}</span>
+          <button class="shelf-all" onclick={() => selectAll(group)}>Select all</button>
+        </header>
+        <ul class="wall">
+          {#each group.pots as pot (pot.id)}
+            {@const stage = map.get(pot.stage)}
+            {@const days = daysInStage(pot)}
+            <li>
+              <div
+                class="tile {waitLevel(days) ? `wait-${waitLevel(days)}` : ''}"
+                class:selected={selected.has(pot.id)}
+                class:done={isDone(stage)}
+                role="button"
+                tabindex="0"
+                aria-label="{pot.name || `Pot ${pot.id}`}, {stage?.label}, {daysLabel(days)}"
+                aria-pressed={selecting ? selected.has(pot.id) : undefined}
+                onclick={() => tap(pot)}
+                onkeydown={(e) => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), tap(pot))}
+                use:swipe={{ enabled: !selecting, sideways: false, onlongpress: () => startSelecting(pot) }}
+              >
+                <div class="shot" class:placeholder={!pot.url}>
+                  {#if pot.url}
+                    <img src={pot.url} alt="" loading="lazy" draggable="false" />
+                  {:else}
+                    <Silhouette progress={1} size={72} muted />
+                  {/if}
+                  <span class="badge">{stage?.label}</span>
+                  <span class="days">{daysLabel(days)}</span>
+                  {#if selecting}<span class="tick">{selected.has(pot.id) ? '✓' : ''}</span>{/if}
+                </div>
+                <div class="tile-name">{pot.name || `Pot ${pot.id}`}</div>
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/each}
   {/if}
 </main>
 
