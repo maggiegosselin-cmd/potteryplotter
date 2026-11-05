@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: ["node", "server/server.js"]
+    environment:
+      PORT: "8080"
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
