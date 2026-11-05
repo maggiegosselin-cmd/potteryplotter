@@ -9,7 +9,7 @@
 3. **A copy can make a loss permanent.** A copy that only mirrors the phone can be overwritten by an emptied database; keeping earlier copies is what makes those events recoverable (my reading).
 4. **On iPhone the Safari tab and the installed app are separate stores, but cookies cross once.** WebKit's notes say Add to Home Screen copies cookies (not other storage) on iOS 17.2 and later, which is one way for a secret to reach the installed app with nothing typed.
 5. **Nothing is copied off the phone today.** The app has no export, import or copy; a saved file would cover every event except the gap and a failed write, and depends on being saved off the phone.
-6. **Privacy without accounts, nothing to remember:** 25 options across 8 dimensions in 5 problems, each with what it asks of one maintainer. Without a potter-held secret, recovery of a lost phone rests on the maintainer, a file, the old phone or the phone maker's keychain.
+6. **Privacy without accounts, nothing to remember:** 25 options across 8 dimensions in 5 problems, each with what it asks of one maintainer. Without a potter-held secret, recovery of a lost phone rests on the maintainer, a file, the old phone or the phone maker's keychain. A passkey would follow a potter to a new phone only through iCloud Keychain on iPhone or Google Password Manager on Android, each tied to the potter's own account, and the pages describe no sync from one maker's keychain to the other's, only a QR-code sign-in while the old phone is at hand (Apple Support and Google for Developers pages, read; see [the passkey option](design-space.md#a-passkey-on-the-potters-device)).
 
 ## What was not found
 

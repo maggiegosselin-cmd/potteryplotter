@@ -17,6 +17,8 @@
 - **Whether the share sheet is the reliable route for saving a file from an installed iPhone app.** Only community reports found.
 - **Whether a server-set cookie keeps its full life in the installed iPhone app.** Community notes only.
 - **A comparison of ways to keep records private without accounts for a small circle.** None found.
+- **Whether each friend's phone has iCloud Keychain or Google Password Manager syncing switched on, and an account signed in.** Apple's and Google's pages describe how passkeys sync once it is on; neither says how many phones have it on. Asked of the maintainer, about each friend's phone.
+- **Passkeys created by a web app installed to the Home Screen.** The Apple and Google pages read are about passkeys in general; neither was read on the installed-web-app case. A device test settles it.
 - **No friend's own view** of links, reminders or files was gathered.
 
 ## Worth asking, and of whom
@@ -31,6 +33,5 @@
 - On Android, removal of the icon leaving the data in place is the earlier survey's reading of OpenPWA (unverified).
 - Dexie upgrade problems with old open tabs rest on community threads (unverified).
 - Server-set cookie lifetime and the Home Screen app's separate storage rest on a community GitHub note (unverified).
-- Passkeys following a potter to a new phone through the phone maker's keychain is from memory (recalled).
 - Mirroring a copy can copy a loss (F2) is my reading, not a sourced finding.
 - Hosting: the store's backup is whatever the platform provides; no backup beyond it is proposed.

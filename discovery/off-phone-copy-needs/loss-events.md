@@ -16,7 +16,7 @@
 
 - **Phones:** "A mix of iPhone and Android". Both columns of the table below apply; the iPhone-only events (E2 unsettled, E3, E6, no background copy) are part of the work.
 - **First weeks:** "Yes, for my first weeks and my friends' first weeks" to records living only on their own phone. Events E1 to E4 and E6 to E8 are therefore accepted risks for the first weeks (my reading: the maintainer accepted the risk of loss in that period, not any particular loss); a copy off the phone is needed after them, not before the first pot.
-- **Nothing to remember:** "No, it must work with nothing to remember". A copy that recovers E1 or E2 therefore cannot depend on a code or passphrase the potter keeps; recovery rests on the maintainer, a file, the old phone or the phone maker's own keychain.
+- **Nothing to remember:** "No, it must work with nothing to remember". A copy that recovers E1 or E2 therefore cannot depend on a code or passphrase the potter keeps; recovery rests on the maintainer, a file, the old phone or the phone maker's own keychain (iCloud Keychain or Google Password Manager, each tied to the potter's Apple or Google account; see [A passkey on the potter's device](design-space.md#a-passkey-on-the-potters-device)).
 - **Save-a-copy button with a reminder:** the maintainer is not sure yet. Where a table below says "a file", the file's tap is that open question.
 
 ## What the app holds today
