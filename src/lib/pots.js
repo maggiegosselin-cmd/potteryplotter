@@ -256,6 +256,48 @@ export function sortNewestFirst(pots) {
   return [...pots].sort((a, b) => b.createdAt - a.createdAt || b.id - a.id);
 }
 
+/**
+ * The order the shelf walk visits stages in. The one place to change what leads:
+ * path stages from lump to finished, then waiting on staff, then the end states.
+ */
+export function leadOrder(stages) {
+  return [...pathStages(stages), ...stages.filter((s) => s.kind === 'waiting').sort(byOrder), ...endStages(stages)];
+}
+
+/** Longest-waiting first: earliest stageSince; a missing date sorts last; ties by date added, then id. */
+export function sortLongestWaiting(pots) {
+  const since = (p) => (Number.isFinite(p.stageSince) ? p.stageSince : Infinity);
+  const added = (p) => (Number.isFinite(p.createdAt) ? p.createdAt : Infinity);
+  const cmp = (x, y) => (x === y ? 0 : x < y ? -1 : 1);
+  return [...pots].sort((a, b) => cmp(since(a), since(b)) || cmp(added(a), added(b)) || cmp(String(a.id), String(b.id)));
+}
+
+/**
+ * Active (not archived) pots as sections, one per stage in leadOrder(), longest-waiting
+ * first inside each. Empty sections are left out; a pot whose stage is unknown goes in a
+ * last section of its own. Each section: { id, stage, pots, count, longestDays }.
+ */
+export function groupByStage(pots, stages, now = Date.now()) {
+  const active = pots.filter((p) => !isArchived(p));
+  const known = new Set(stages.map((s) => s.id));
+  const order = leadOrder(stages).map((stage) => ({ id: stage.id, stage, members: active.filter((p) => p.stage === stage.id) }));
+  const orphans = active.filter((p) => !known.has(p.stage));
+  if (orphans.length) order.push({ id: '', stage: null, members: orphans });
+  return order
+    .filter((g) => g.members.length)
+    .map((g) => {
+      const sorted = sortLongestWaiting(g.members);
+      const oldest = sorted[0];
+      return {
+        id: g.id,
+        stage: g.stage,
+        pots: sorted,
+        count: sorted.length,
+        longestDays: Number.isFinite(oldest.stageSince) ? daysInStage(oldest, now) : null,
+      };
+    });
+}
+
 /** "today", "3 days ago", "3 weeks ago", ... for how long ago a pot was added. */
 export function agoLabel(ts, now = Date.now()) {
   const days = Math.max(0, Math.floor((now - ts) / DAY));
