@@ -88,6 +88,25 @@ h2 { font-size: 1.15rem; margin: 18px 0 4px; color: var(--clay-dark); }
 .select-bar .btn { min-height: 80px; font-size: 1.2rem; box-shadow: none; max-width: none; }
 .select-bar .btn.wide, .select-bar .btn.secondary { grid-column: 1 / -1; }
 
+/* Shelf groups */
+.group { margin-top: 8px; }
+.group h2 { display: flex; align-items: center; gap: 8px; margin: 18px 0 4px; }
+.group h2 .n { background: #e7d3b3; color: var(--clay-dark); border-radius: 12px; padding: 0 10px; font-size: .95rem; font-weight: 700; }
+.group.strip { background: #ecd7b8; border-radius: 20px; padding: 2px 12px 14px; }
+.group.strip h2 { margin-top: 12px; }
+.fold { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 56px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; text-align: left; }
+.fold .n { background: #e7d3b3; color: var(--clay-dark); border-radius: 12px; padding: 0 10px; font-size: .95rem; font-weight: 700; }
+.card.long { border-left: 8px solid #d99a7d; }
+.long-mark { margin-left: 8px; padding: 0 8px; border-radius: 10px; background: #f3d9cc; color: var(--clay-dark); font-size: .8rem; font-weight: 600; white-space: nowrap; }
+.hand-in-open { margin: 4px 0 8px; }
+.hand-row { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 96px; padding: 10px 14px; border: 3px solid #cdb89b; border-radius: 18px; background: #fff; color: var(--ink); text-align: left; cursor: pointer; }
+.hand-row.on { border-color: var(--clay); background: #fbefe6; }
+.hand-row .info { display: grid; min-width: 0; }
+.hand-row .name { font-weight: 700; }
+.hand-row .stage { color: var(--clay-dark); font-weight: 600; font-size: .95rem; }
+.bigcheck { flex: none; width: 64px; height: 64px; border-radius: 16px; border: 4px solid var(--clay); background: #fff; color: #fff; font-size: 2.4rem; font-weight: 800; display: grid; place-items: center; line-height: 1; }
+.hand-row.on .bigcheck { background: var(--clay); }
+
 /* Pot screen */
 .hero { margin-top: 12px; border-radius: 18px; overflow: hidden; background: #d99a7d; display: grid; place-items: center; min-height: 160px; }
 .hero img { width: 100%; max-height: 50dvh; object-fit: cover; display: block; }

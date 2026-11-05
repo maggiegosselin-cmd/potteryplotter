@@ -198,7 +198,7 @@ export function examplePots(stages, now = Date.now()) {
     ['Coil planter', 'Terracotta', 'bisque_fired', 4, 6],
     ['Slab vase', 'Stoneware', 'bone_dry', 12, 8],
     ['Mug set', 'Stoneware', 'final_firing', 2, 9],
-    ['Tea set cup', 'Porcelain', 'waiting_staff', 9, 14],
+    ['Tea set cup', 'Porcelain', 'waiting_staff', 12, 14],
     ['Spoon rest', 'Stoneware', 'glazed', 15, 18],
     ['Teapot', 'Stoneware', 'finished', 5, 21],
     ['Bud vase', 'Porcelain', 'reclaimed', 10, 28],

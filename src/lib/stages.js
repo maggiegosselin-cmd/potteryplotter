@@ -30,3 +30,26 @@ export const STAGES = [
 ];
 
 export const WAITING_ID = 'waiting_staff';
+
+// The shelf walk leads with these stages: pots that are with studio staff or in
+// a kiln stage, so out of the potter's hands. Their order here does not matter;
+// the strip is sorted by wait. The remaining path stages follow in `order`.
+export const HANDED_IN_STAGES = ['waiting_staff', 'bisque_kiln', 'final_firing'];
+
+// Typical days a pot spends in a stage, as data for the "waited a while" mark.
+// A stage with no row (the finished and end states) is never marked.
+export const TYPICAL_DAYS = {
+  lump: 2,
+  formed: 3,
+  leather_hard: 4,
+  bone_dry: 5,
+  waiting_staff: 5,
+  bisque_kiln: 4,
+  bisque_fired: 7,
+  glazed: 5,
+  final_firing: 4,
+  glaze_fired: 7,
+};
+
+// A pot is marked once it has waited at least this many times the typical days.
+export const LONG_WAIT_FACTOR = 2;
