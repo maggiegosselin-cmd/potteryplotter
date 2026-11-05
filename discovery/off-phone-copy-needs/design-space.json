@@ -1,0 +1,228 @@
+{
+  "problems": [
+    {
+      "name": "Each potter's copy is theirs alone",
+      "summary": "A friend's copy off the phone can be read and replaced only by that friend, with no account and nothing to remember.",
+      "section": "design-space.md#each-potters-copy-is-theirs-alone"
+    },
+    {
+      "name": "A replaced or wiped phone gets its records back",
+      "summary": "A potter with an empty phone can get their pots and photos back without having kept a code.",
+      "section": "design-space.md#a-replaced-or-wiped-phone-gets-its-records-back"
+    },
+    {
+      "name": "A copy is made although iPhones only copy while open",
+      "summary": "Records reach a second place soon enough that a lost phone costs little, without any background copy.",
+      "section": "design-space.md#a-copy-is-made-although-iphones-only-copy-while-open"
+    },
+    {
+      "name": "A lost or leaked secret does not end the copy's safety",
+      "summary": "A potter whose phone is lost or whose secret leaks is left with neither a stranger reading their pots nor no way back.",
+      "section": "design-space.md#a-lost-or-leaked-secret-does-not-end-the-copys-safety"
+    },
+    {
+      "name": "A bad copy does not replace a good one",
+      "summary": "An update bug, a cleared store or a second install cannot overwrite a good copy off the phone with an empty or older one.",
+      "section": "design-space.md#a-bad-copy-does-not-replace-a-good-one"
+    }
+  ],
+  "dimensions": [
+    {
+      "problem": "Each potter's copy is theirs alone",
+      "name": "What proves a copy is the potter's",
+      "section": "design-space.md#what-proves-a-copy-is-the-potters",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "A random secret the app makes",
+          "description": "On first use the app makes a long random secret (at least 120 bits), keeps it on the phone and sends it with each copy; whoever holds it can read and replace that potter's copy.",
+          "section": "design-space.md#a-random-secret-the-app-makes"
+        },
+        {
+          "name": "A link the maintainer sends each friend",
+          "description": "The maintainer makes one link per friend carrying a long random secret and sends it in a message; the friend taps it once and the app keeps the secret, with no typing.",
+          "section": "design-space.md#a-link-the-maintainer-sends-each-friend"
+        },
+        {
+          "name": "A passkey on the potter's device",
+          "description": "The app registers a passkey against a random handle, and the store releases a copy only to the holder of that passkey.",
+          "section": "design-space.md#a-passkey-on-the-potters-device"
+        },
+        {
+          "name": "No server copy, only files",
+          "description": "Nothing is sent to a server; every copy off the phone is a file the potter saves where they choose.",
+          "section": "design-space.md#no-server-copy-only-files"
+        }
+      ],
+      "why_it_matters": "Without accounts something other than a sign-in has to say whose copy this is, and each choice puts a different job on the maintainer or the potter."
+    },
+    {
+      "problem": "Each potter's copy is theirs alone",
+      "name": "How the secret reaches the installed iPhone app",
+      "section": "design-space.md#how-the-secret-reaches-the-installed-iphone-app",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A cookie the server sets",
+          "description": "The server sets a cookie holding the secret when the link opens in Safari; on iOS 17.2 and later, Add to Home Screen copies cookies into the new web app once, and the app moves the secret into its own storage.",
+          "section": "design-space.md#a-cookie-the-server-sets"
+        },
+        {
+          "name": "The secret is made in the installed app",
+          "description": "The app makes or accepts the secret only when opened from the home screen; in a Safari tab it logs nothing and says to install first.",
+          "section": "design-space.md#the-secret-is-made-in-the-installed-app"
+        },
+        {
+          "name": "A file from the Safari tab",
+          "description": "Pots logged in a tab are saved as a file there and opened in the installed app, which then has its own secret.",
+          "section": "design-space.md#a-file-from-the-safari-tab"
+        }
+      ],
+      "why_it_matters": "On iPhone a Safari tab and the installed app are separate stores, so a secret made in Safari is not in the app the friend then installs."
+    },
+    {
+      "problem": "Each potter's copy is theirs alone",
+      "name": "How the stored copy is protected",
+      "section": "design-space.md#how-the-stored-copy-is-protected",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Readable behind the secret",
+          "description": "The store keeps records and photos as they are, protected only by the secret or passkey.",
+          "section": "design-space.md#readable-behind-the-secret"
+        },
+        {
+          "name": "Encrypted at rest under a server key",
+          "description": "The server encrypts each copy with a key it keeps outside the stored data, so a leaked disk or backup shows nothing readable.",
+          "section": "design-space.md#encrypted-at-rest-under-a-server-key"
+        }
+      ],
+      "why_it_matters": "The maintainer is comfortable being able to read friends' pots, so the choice is about what a leak of the store alone would show."
+    },
+    {
+      "problem": "Each potter's copy is theirs alone",
+      "name": "Where the copy is kept",
+      "section": "design-space.md#where-the-copy-is-kept",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "A file the potter saves",
+          "description": "A button makes one file of records and photos and hands it to the share sheet or a download, so the potter chooses where it goes.",
+          "section": "design-space.md#a-file-the-potter-saves"
+        },
+        {
+          "name": "The maintainer's server",
+          "description": "The app posts a copy to a small store the maintainer runs whenever it is open and online.",
+          "section": "design-space.md#the-maintainers-server"
+        },
+        {
+          "name": "The potter's own cloud drive",
+          "description": "The app writes a copy to a cloud drive the potter already has, after the potter allows it.",
+          "section": "design-space.md#the-potters-own-cloud-drive"
+        }
+      ],
+      "why_it_matters": "Where a copy sits decides who can reach it and what the maintainer must keep running, and more than one place can be used."
+    },
+    {
+      "problem": "A replaced or wiped phone gets its records back",
+      "name": "How the records come back",
+      "section": "design-space.md#how-the-records-come-back",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "The maintainer sends the link again",
+          "description": "The friend messages the maintainer, who sends that friend's link or issues a new one tied to the same copy, and the friend taps it on the new phone.",
+          "section": "design-space.md#the-maintainer-sends-the-link-again"
+        },
+        {
+          "name": "Open a saved file",
+          "description": "The potter opens a saved file from the share sheet or a picker and the app imports it.",
+          "section": "design-space.md#open-a-saved-file"
+        },
+        {
+          "name": "Scan from the old phone",
+          "description": "While the old phone still works it shows a code the new phone scans to receive the records.",
+          "section": "design-space.md#scan-from-the-old-phone"
+        }
+      ],
+      "why_it_matters": "A copy nobody can restore is not a recovery, and with nothing for the potter to remember the way back rests on the maintainer, a file or the old phone."
+    },
+    {
+      "problem": "A copy is made although iPhones only copy while open",
+      "name": "When the copy is made",
+      "section": "design-space.md#when-the-copy-is-made",
+      "exclusive": false,
+      "options": [
+        {
+          "name": "Each time the app opens online",
+          "description": "On launch and when the phone reports it is online again, the app copies anything new.",
+          "section": "design-space.md#each-time-the-app-opens-online"
+        },
+        {
+          "name": "After each save while online",
+          "description": "Each save of a pot, stage change or photo is sent as soon as it is stored, when a connection exists.",
+          "section": "design-space.md#after-each-save-while-online"
+        },
+        {
+          "name": "A button the potter taps",
+          "description": "A Save a copy now button makes a copy of everything, as a file or to the server, on demand.",
+          "section": "design-space.md#a-button-the-potter-taps"
+        },
+        {
+          "name": "A reminder when the last copy is old",
+          "description": "The app shows when the last copy was made and a nudge once it is older than a limit the potter can see.",
+          "section": "design-space.md#a-reminder-when-the-last-copy-is-old"
+        }
+      ],
+      "why_it_matters": "iPhones cannot copy in the background, so the moments a copy happens and how visible they are decide the gap; the maintainer is not sure yet whether a button with a reminder is acceptable."
+    },
+    {
+      "problem": "A lost or leaked secret does not end the copy's safety",
+      "name": "What happens when the secret is lost or leaked",
+      "section": "design-space.md#what-happens-when-the-secret-is-lost-or-leaked",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Nothing can be done",
+          "description": "A lost secret means the copy cannot be opened; a new secret starts an empty copy.",
+          "section": "design-space.md#nothing-can-be-done"
+        },
+        {
+          "name": "The maintainer can reset a friend's copy",
+          "description": "The maintainer hands a friend a new secret for the same copy after checking by message who they are.",
+          "section": "design-space.md#the-maintainer-can-reset-a-friends-copy"
+        },
+        {
+          "name": "A secret the potter can replace",
+          "description": "From the app the potter makes a new secret, which moves the copy and invalidates the old one.",
+          "section": "design-space.md#a-secret-the-potter-can-replace"
+        }
+      ],
+      "why_it_matters": "With nothing for the potter to hold, recovery rests on the maintainer or the platform, and each choice trades the maintainer's time against the risk of loss."
+    },
+    {
+      "problem": "A bad copy does not replace a good one",
+      "name": "How earlier copies are kept",
+      "section": "design-space.md#how-earlier-copies-are-kept",
+      "exclusive": true,
+      "options": [
+        {
+          "name": "Only the latest copy",
+          "description": "Each new copy replaces the one before.",
+          "section": "design-space.md#only-the-latest-copy"
+        },
+        {
+          "name": "The last few dated copies",
+          "description": "The store keeps the last few copies with their dates and the app can restore an older one.",
+          "section": "design-space.md#the-last-few-dated-copies"
+        },
+        {
+          "name": "Merge pot by pot",
+          "description": "Each pot has its own identity and last-changed time, and a copy adds or updates pots rather than replacing the lot.",
+          "section": "design-space.md#merge-pot-by-pot"
+        }
+      ],
+      "why_it_matters": "A copy that mirrors the phone can copy a loss, and two installs on one iPhone are normal, so how copies are kept decides whether such events can be undone."
+    }
+  ]
+}
