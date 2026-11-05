@@ -10,7 +10,7 @@
   import InstallHelp from './InstallHelp.svelte';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, notice = '', onadd, onopen, onmove, onarchive, onrestore } = $props();
+  let { stages, notice = '', onadd, onopen, onmove, onarchive, onrestore, onfinished } = $props();
 
   const ARCHIVE = 'archive'; // the filter that opens the archive; no stage has this id
 
@@ -145,6 +145,7 @@
     <p class="empty">No pots yet. Tap the big button to log your first one.</p>
     <button class="link center" onclick={() => addExamples()}>Or try it with some example pots</button>
   {:else}
+    <button class="btn secondary small finished-link" onclick={onfinished}>🖼 Finished pots</button>
     <div class="chips" role="group" aria-label="Show stage">
       <button class="chip" class:on={!filter} onclick={() => pick(null)}>All {active.length}</button>
       {#each chips as s (s.id)}
