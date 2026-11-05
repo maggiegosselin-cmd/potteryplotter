@@ -1,3 +1,4 @@
 version: 1
 service: app
 test_command: npm test
+seed_command: node server/seed.js
