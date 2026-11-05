@@ -10,9 +10,14 @@
   import StageList from './components/StageList.svelte';
   import GlazeSheet from './components/GlazeSheet.svelte';
   import FinishedPots from './components/FinishedPots.svelte';
+  import Welcome from './components/Welcome.svelte';
+  import FirstPot from './components/FirstPot.svelte';
+  import { installed } from './lib/install.js';
 
   let stages = $state(null); // the stage rows from the database; null until read
   let glazes = $state([]); // the potter's glaze shelf
+  let potCount = $state(null); // how many pots are saved; null until read. First-open is judged from this alone.
+  let welcomed = $state(false); // this visit has left the browser welcome page (never stored)
   let adding = $state(false);
   let editingStages = $state(false);
   let showFinished = $state(false);
@@ -39,6 +44,21 @@
     });
     return () => sub.unsubscribe();
   });
+
+  $effect(() => {
+    const sub = liveQuery(() => db.pots.count()).subscribe({
+      next: (n) => (potCount = n),
+      error: (err) => {
+        potCount = 0;
+        toast = { text: explainStorageError(err).message, error: true };
+      },
+    });
+    return () => sub.unsubscribe();
+  });
+
+  // Installed app with an empty pots table: one big button. A browser visitor sees the welcome page first.
+  const firstOpen = $derived($installed && potCount === 0);
+  const welcome = $derived(!$installed && !welcomed);
 
   function show(next, ms = 10000) {
     clearTimeout(toastTimer);
@@ -149,11 +169,17 @@
 
 <input class="hidden-input" type="file" accept="image/*" capture="environment" bind:this={cameraInput} onchange={photoPicked} tabindex="-1" aria-hidden="true" />
 
-{#if stages === null}
+{#if stages === null || potCount === null}
   <main class="screen"><p class="empty">Loading…</p></main>
+{:else if welcome}
+  <Welcome onlog={() => { welcomed = true; adding = true; }} onskip={() => (welcomed = true)} />
+{:else if firstOpen}
+  <FirstPot onadd={() => (adding = true)} onstages={() => (editingStages = true)} />
 {:else}
   <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onstages={() => (editingStages = true)} onmove={move} onarchive={archive} onrestore={restore} onfinished={() => (showFinished = true)} />
+{/if}
 
+{#if stages !== null && potCount !== null}
   {#if showFinished}
     <FinishedPots {stages} {glazes} onopen={(id) => (openId = id)} onback={() => (showFinished = false)} />
   {/if}

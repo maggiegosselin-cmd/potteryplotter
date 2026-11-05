@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { installCase, inAppBrowser, isIosUa } from './environment.js';
 
 export function isStandalone() {
   return (
@@ -9,9 +10,16 @@ export function isStandalone() {
 }
 
 export function isIos() {
-  const ua = navigator.userAgent;
-  return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return isIosUa(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
 }
+
+/** How this page was opened: 'in-app', 'ios-safari', 'ios-other' or 'android'. */
+export function detectCase() {
+  return installCase(navigator.userAgent, navigator.platform, navigator.maxTouchPoints);
+}
+
+/** The in-app browser's name (Instagram, Messenger, Facebook), or null. */
+export const detectInAppName = () => inAppBrowser(navigator.userAgent);
 
 /** The Android/Chrome install prompt, once the browser offers it (iPhone never does). */
 export const installPrompt = writable(null);

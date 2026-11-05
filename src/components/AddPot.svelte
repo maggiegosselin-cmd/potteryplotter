@@ -7,6 +7,9 @@
   import { earlierStages, fromDateInput, isFinished, pathStages, startStages, toDateInput } from '../lib/pots.js';
   import { stackToLayers } from '../lib/glazes.js';
   import GlazePicker from './GlazePicker.svelte';
+  import InstallGuide from './InstallGuide.svelte';
+  import { installed } from '../lib/install.js';
+  import { GUIDE } from '../content/guide.js';
 
   let { stages, glazes, onsaved, oncancel } = $props();
 
@@ -159,6 +162,18 @@
 
     {#if error}
       <div class="banner error" role="alert">{error}</div>
+    {/if}
+
+    {#if !$installed}
+      <!-- A browser tab and the installed app keep separate pots. The pot still saves here. -->
+      <div class="banner error tab-warning" role="alert">
+        <strong>{GUIDE.tabWarning.title}</strong>
+        <p>{GUIDE.tabWarning.text}</p>
+        <details class="tab-steps">
+          <summary>{GUIDE.tabWarning.steps}</summary>
+          <InstallGuide />
+        </details>
+      </div>
     {/if}
 
     <h2>Where is it now?</h2>

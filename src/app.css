@@ -189,3 +189,27 @@ h3 { font-size: 1rem; margin: 12px 0 2px; color: var(--clay-dark); }
 .glaze-cap .over { color: #6b5b50; }
 .glaze-name { padding: 4px 6px; margin: 0; min-height: 40px; border: 0; background: none; color: var(--clay-dark); font-weight: 700; text-decoration: underline; font-size: inherit; cursor: pointer; }
 .filter-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+/* Install guide, welcome page and first-open screen */
+.ink { font-family: 'Segoe Print', 'Bradley Hand', 'Chalkboard SE', 'Comic Sans MS', cursive; font-weight: 700; letter-spacing: .01em; }
+.guide h2.ink { font-size: 1.5rem; margin: 8px 0; color: var(--ink); }
+.guide h3.ink { font-size: 1.3rem; margin: 8px 0 2px; color: var(--clay-dark); }
+.guide p { margin: 4px 0 10px; }
+.guide-lead { font-size: 1.1rem; }
+.guide-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.guide-step { background: #fff; border: 3px solid var(--ink); border-radius: 22px 14px 20px 16px; padding: 12px 14px 14px; }
+.guide-step .art { display: block; width: 100%; max-height: 240px; background: #fbf3e4; border-radius: 14px; }
+.guide-step .btn { margin-top: 6px; }
+.guide-note { border-left-color: #c9962b; }
+.guide-link { width: 100%; min-height: 64px; padding: 12px 16px; margin: 14px 0 10px; border: 3px solid #cdb89b; border-radius: 14px; background: #fff; color: var(--ink); font-size: 1rem; }
+.guide-last { font-size: 1.3rem; text-align: center; margin: 18px 0 8px; }
+.welcome { padding-bottom: calc(220px + env(safe-area-inset-bottom)); }
+.welcome h1 { font-size: 2rem; }
+.install-help summary, .tab-steps summary { min-height: 56px; display: flex; align-items: center; font-weight: 700; cursor: pointer; }
+.tab-warning p { margin: 6px 0 4px; font-weight: 400; color: var(--ink); }
+.tab-warning .tab-steps { color: var(--ink); font-weight: 400; background: #fff; }
+.first-pot { display: grid; align-content: center; gap: 28px; padding-bottom: 32px; }
+.first-pot h1 { text-align: center; font-size: 2.2rem; }
+.first-btn { min-height: 220px; font-size: 2.2rem; border-radius: 28px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+.first-line { text-align: center; margin: 0; color: #6b5b50; }
+.link.inline { display: inline; min-height: 48px; padding: 0 4px; font-size: inherit; font-weight: 700; }
