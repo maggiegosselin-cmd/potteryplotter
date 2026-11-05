@@ -46,7 +46,10 @@ function withCurrent(pot, history) {
 /** A new pot at any stage; `earlier` maps earlier stage ids to the dates remembered (or null). */
 export function buildPot({ name, clay, notes, photo, width, height, stage, occurredAt, earlier = {}, now = Date.now(), stages }) {
   const path = pathStages(stages);
-  const at = path.findIndex((s) => s.id === stage);
+  const kind = stages.find((s) => s.id === stage)?.kind;
+  // A pot can also be added already at an end state (e.g. finished with a flaw);
+  // every path stage is then an earlier one.
+  const at = kind === 'end' ? path.length : path.findIndex((s) => s.id === stage);
   if (at < 0) throw new RangeError(`Cannot start a pot at ${stage}`);
   const history = [];
   for (const s of path.slice(0, at)) {
@@ -316,7 +319,7 @@ export function examplePots(stages, now = Date.now(), photos = {}) {
     ['Cracked jar', 'Stoneware', 'failed', 20, 55, true],
   ];
   // Where a pot that is not on the path (or is waiting) came from.
-  const from = { waiting_staff: 'bone_dry', failed: 'leather_hard', reclaimed: 'formed' };
+  const from = { waiting_staff: 'bone_dry', failed: 'leather_hard', reclaimed: 'formed', flawed: 'glaze_fired' };
   const path = pathStages(stages);
   return specs.map(([name, clay, stage, days, added, archived, extras = {}], i) => {
     const entered = now - added * DAY - i * 60_000;
