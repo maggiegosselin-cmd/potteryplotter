@@ -1,0 +1,16 @@
+{
+  "requirements": [
+    {
+      "kind": "secret",
+      "name": "DATABASE_PATH",
+      "description": "Where the server keeps each potter's copy of their pots (a SQLite file, with photos in a folder beside it). Lives on the application's own disk, which survives restarts and deploys.",
+      "hermetic_alternate": "/data/potlog.db",
+      "datastore": {
+        "data_path": "/data",
+        "value": "/data/potlog.db",
+        "capacity_gb": 2,
+        "capacity_basis": "A few friends, each saving up to a few hundred pots with one or two photos of about 300 KB each, which comes to well under 1 GB a year."
+      }
+    }
+  ]
+}

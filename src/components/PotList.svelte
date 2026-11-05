@@ -8,6 +8,7 @@
     sortNewestFirst, stageMap,
   } from '../lib/pots.js';
   import InstallHelp from './InstallHelp.svelte';
+  import CopyStatus from './CopyStatus.svelte';
   import Silhouette from './Silhouette.svelte';
 
   let { stages, notice = '', onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished } = $props();
@@ -124,6 +125,8 @@
 <main class="screen" class:selecting>
   <h1>My pots</h1>
   <p class="sub">Grouped by stage, longest-waiting first. Swipe a card to move it on; press and hold to pick several.</p>
+
+  <CopyStatus />
 
   {#if notice}
     <div class="banner ok" role="status">{notice}</div>

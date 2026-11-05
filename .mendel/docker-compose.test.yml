@@ -6,6 +6,7 @@ services:
     command: ["node", "server/server.js"]
     environment:
       PORT: "8080"
+      DATABASE_PATH: "/data/potlog.db"
     expose:
       - "8080"
     healthcheck:
