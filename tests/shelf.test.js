@@ -7,11 +7,7 @@ import { groupForWalk, handInCandidates, handInMoves, waitDays, waitedLong } fro
 const NOW = Date.UTC(2025, 5, 1, 12);
 
 let nextId = 1;
-const pot = (stage, daysAgo, extra = {}) => ({
-  ...buildPot({ stage, now: NOW, stages: STAGES, occurredAt: NOW - daysAgo * DAY }),
-  id: nextId++,
-  ...extra,
-});
+
 
 test('the strip holds staff and kiln pots only, longest wait first across the three stages', () => {
   const pots = [
