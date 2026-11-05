@@ -8,6 +8,7 @@ import {
 import { InputError, cleanGlazeName, findGlaze, usesGlaze } from './glazes.js';
 import { makeSwatchPhoto } from './samplePhoto.js';
 import { FIRST_POT } from './firstPot.js';
+import { ExportError } from './exportData.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
 // photo as a Blob, so the record and its photo are written in one transaction.
@@ -407,4 +408,21 @@ export async function addExamples() {
       await db.pots.bulkAdd(examplePots(stages, Date.now(), { glazeIds, photos }));
     }),
   );
+}
+
+/**
+ * Every pot, glaze and stage as they are at one moment, read in a single read
+ * transaction so an export never mixes states. The photos stay Blobs (references).
+ */
+export async function readExportSnapshot() {
+  try {
+    return await db.transaction('r', db.pots, db.glazes, db.stages, async () => ({
+      pots: await db.pots.toArray(),
+      glazes: await db.glazes.toArray(),
+      stages: await db.stages.orderBy('order').toArray(),
+      exportedAt: Date.now(),
+    }));
+  } catch (err) {
+    throw new ExportError(`Your pots could not be read, so nothing was exported. (${explainStorageError(err).message})`, err);
+  }
 }

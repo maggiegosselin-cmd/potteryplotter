@@ -16,12 +16,14 @@
   import FinishedPots from './components/FinishedPots.svelte';
   import InstallGuide from './components/InstallGuide.svelte';
   import FirstPotCoach from './components/FirstPotCoach.svelte';
+  import ExportSheet from './components/ExportSheet.svelte';
 
   let stages = $state(null); // the stage rows from the database; null until read
   let glazes = $state([]); // the potter's glaze shelf
   let adding = $state(false);
   let editingStages = $state(false);
   let showFinished = $state(false);
+  let exporting = $state(false);
   let sheetPotId = $state(null); // the pot whose glazes (and finished photo) are being recorded
   let openId = $state(null);
   let notice = $state('');
@@ -225,10 +227,14 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} {coach} onguide={() => (guide = 'welcome')} onadd={addPot} onopen={(id) => { justSaved = false; openId = id; }} onstages={() => (editingStages = true)} onmove={move} onarchive={archive} onrestore={restore} onfinished={() => (showFinished = true)} />
+  <PotList {stages} {notice} {coach} onguide={() => (guide = 'welcome')} onadd={addPot} onopen={(id) => { justSaved = false; openId = id; }} onstages={() => (editingStages = true)} onmove={move} onarchive={archive} onrestore={restore} onfinished={() => (showFinished = true)} onexport={() => (exporting = true)} />
 
   {#if showFinished}
     <FinishedPots {stages} {glazes} onopen={(id) => (openId = id)} onback={() => (showFinished = false)} />
+  {/if}
+
+  {#if exporting}
+    <ExportSheet onclose={() => (exporting = false)} />
   {/if}
 
   {#if openId !== null}
