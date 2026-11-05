@@ -7,10 +7,11 @@
     agoLabel, canArchive, coverPhoto, countByStage, daysInStage, daysLabel, isArchived, isDone, nextStageId, progressOf,
     sortNewestFirst, stageMap,
   } from '../lib/pots.js';
+  import { WAITING_ID } from '../lib/stages.js';
   import InstallHelp from './InstallHelp.svelte';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, notice = '', onadd, onopen, onmove, onarchive, onrestore } = $props();
+  let { stages, notice = '', onadd, onopen, onstages, onmove, onarchive, onrestore } = $props();
 
   const ARCHIVE = 'archive'; // the filter that opens the archive; no stage has this id
 
@@ -56,7 +57,9 @@
   const chips = $derived(stages.filter((s) => counts.has(s.id)).sort((a, b) => a.order - b.order));
   const shown = $derived(sortNewestFirst(inArchive ? archived : active.filter((p) => !filter || p.stage === filter)));
   const picked = $derived(shown.filter((p) => selected.has(p.id)));
-  const toStaff = $derived(picked.filter((p) => map.get(p.stage)?.viaWaiting));
+  // With the waiting state hidden, a hand-in goes straight to the kiln stage, so no hand-in button.
+  const waitingOn = $derived(!!map.get(WAITING_ID) && !map.get(WAITING_ID).hidden);
+  const toStaff = $derived(waitingOn ? picked.filter((p) => map.get(p.stage)?.viaWaiting) : []);
   const afterHandIn = $derived(picked.filter((p) => map.get(p.stage)?.kind === 'waiting'));
   // Archiving is offered only when every selected pot has ended.
   const allEnded = $derived(picked.length > 0 && picked.every((p) => canArchive(p, stages)));
@@ -116,7 +119,10 @@
 
 
 <main class="screen" class:selecting>
-  <h1>My pots</h1>
+  <div class="top-row">
+    <h1>My pots</h1>
+    <button class="btn secondary small top-btn" onclick={onstages}>My stages</button>
+  </div>
   <p class="sub">Newest first. Swipe a card to move it on; press and hold to pick several.</p>
 
   {#if notice}

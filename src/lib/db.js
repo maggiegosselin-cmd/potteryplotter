@@ -1,4 +1,5 @@
 import Dexie from 'dexie';
+import { seedMissing, seedRows } from './stageEdit.js';
 import { STAGES } from './stages.js';
 import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, restorePot, undoEntry } from './pots.js';
 
@@ -39,8 +40,24 @@ db.version(3)
     });
   });
 
-// A brand-new install never runs the upgrade, so it gets the stages here.
-db.on('populate', (tx) => tx.table('stages').bulkAdd(STAGES));
+// Version 4 lets the potter edit the stages on this phone: every row gets `hidden`
+// (false), and the author's stages this phone lacks are added. Rows already here
+// are never replaced, so nothing the potter has changed is overwritten.
+db.version(4)
+  .stores({
+    pots: '++id, createdAt, stage, stageSince',
+    stages: 'id, order',
+  })
+  .upgrade(async (tx) => {
+    const table = tx.table('stages');
+    await table.bulkAdd(seedMissing(await table.toArray()));
+    await table.toCollection().modify((stage) => {
+      if (stage.hidden === undefined) stage.hidden = false;
+    });
+  });
+
+// A brand-new install never runs the upgrade, so it gets the author's stages here.
+db.on('populate', (tx) => tx.table('stages').bulkAdd(seedRows()));
 
 export class StorageError extends Error {
   /** kind: 'quota' | 'unavailable' | 'unverified' | 'unknown' */
@@ -194,6 +211,14 @@ export function updateEntry(potId, entryId, patch) {
       if (pot) await db.pots.put(editEntry(pot, entryId, patch));
     }),
   );
+}
+
+/**
+ * Stores edited stage rows. Rows are only added or replaced, never deleted, so
+ * every pot and history entry keeps the stage id it points at.
+ */
+export function saveStages(rows) {
+  return db.transaction('rw', db.stages, () => db.stages.bulkPut(rows));
 }
 
 export function addExamples() {

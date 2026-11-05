@@ -104,16 +104,21 @@ export function lastPathStageId(pot, stages) {
   return null;
 }
 
-/** The stage one swipe moves a pot to, or null when it has nowhere further to go. */
+/**
+ * The stage one swipe moves a pot to, or null when it has nowhere further to go.
+ * Hidden stages are skipped; a pot sitting in one still moves on from there.
+ */
 export function nextStageId(pot, stages) {
   const map = stageMap(stages);
   const current = map.get(pot.stage);
   if (!current || isDone(current)) return null;
-  if (current.kind === 'path' && current.viaWaiting && map.has(WAITING_ID)) return WAITING_ID;
+  const waiting = map.get(WAITING_ID);
+  if (current.kind === 'path' && current.viaWaiting && waiting && !waiting.hidden) return WAITING_ID;
   const path = pathStages(stages);
   const from = current.kind === 'waiting' ? lastPathStageId(pot, stages) : current.id;
   const at = path.findIndex((s) => s.id === from);
-  return at >= 0 && at < path.length - 1 ? path[at + 1].id : null;
+  if (at < 0) return null;
+  return path.slice(at + 1).find((s) => !s.hidden)?.id ?? null;
 }
 
 /** Moves a pot to a stage, adding its history entry. Returns the new pot. */
@@ -169,8 +174,8 @@ export function agoLabel(ts, now = Date.now()) {
 
 /** 0..1 along the path, for the filling silhouette. */
 export function progressOf(pot, stages) {
-  const path = pathStages(stages);
   const id = lastPathStageId(pot, stages);
+  const path = pathStages(stages).filter((s) => !s.hidden || s.id === id);
   const at = path.findIndex((s) => s.id === id);
   return at < 0 || path.length < 2 ? 0 : at / (path.length - 1);
 }

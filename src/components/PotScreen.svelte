@@ -103,7 +103,7 @@
 
       <h2>End it differently</h2>
       <div class="ends">
-        {#each endStages(stages) as end (end.id)}
+        {#each endStages(stages).filter((e) => !e.hidden) as end (end.id)}
           <button class="btn secondary" disabled={pot.stage === end.id} onclick={() => onmove([{ pot, to: end.id }])}>
             {end.label}
           </button>

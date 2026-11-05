@@ -16,12 +16,13 @@
   let name = $state('');
   let clay = $state('');
   let notes = $state('');
-  let stage = $state('formed');
+  const shown = (list) => pathStages(list).filter((s) => !s.hidden);
+  let stage = $state((shown(stages).find((s) => s.id === 'formed') || shown(stages)[0])?.id);
   let when = $state(toDateInput(Date.now()));
   let earlier = $state({}); // earlier stage id -> yyyy-mm-dd, only the ones remembered
   let error = $state('');
 
-  const path = $derived(pathStages(stages));
+  const path = $derived(shown(stages)); // hidden stages are not offered; pots already in one keep it
   const before = $derived(path.slice(0, Math.max(0, path.findIndex((s) => s.id === stage))));
 
   // The camera stays closed until the potter asks for it.

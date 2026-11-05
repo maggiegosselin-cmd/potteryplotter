@@ -6,12 +6,15 @@
   import PotList from './components/PotList.svelte';
   import AddPot from './components/AddPot.svelte';
   import PotScreen from './components/PotScreen.svelte';
+  import StagesScreen from './components/StagesScreen.svelte';
+  import { flagText, flagsOn } from './lib/flags.js';
 
   let stages = $state(null); // the stage rows from the database; null until read
   let adding = $state(false);
+  let editingStages = $state(false);
   let openId = $state(null);
   let notice = $state('');
-  let toast = $state(null); // { text, error?, undo?, photo? }
+  let toast = $state(null); // { text, error?, undo?, photo?, flag? }
   let toastTimer = 0;
   let cameraInput;
   let photoTarget = null; // { potId, entryId } the next camera photo belongs to
@@ -67,8 +70,10 @@
       const done = await changeStages(changes);
       const label = map.get(items[0].to).label;
       const who = items.length === 1 ? items[0].pot.name || `Pot ${items[0].pot.id}` : `${done.length} pots`;
+      const moved = items.filter(({ pot }) => done.some((c) => c.potId === pot.id));
       show({
         text: `${who} → ${label}`,
+        flag: flagsOn() ? flagText(moved, stages) : '', // a quiet note; the move has already happened
         photo: only?.photo === 'offer' ? target : null,
         undo: async () => {
           try {
@@ -124,10 +129,14 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} />
+  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onstages={() => (editingStages = true)} onmove={move} onarchive={archive} onrestore={restore} />
 
   {#if openId !== null}
     <PotScreen {stages} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} />
+  {/if}
+
+  {#if editingStages}
+    <StagesScreen {stages} onback={() => (editingStages = false)} />
   {/if}
 
   {#if adding}
@@ -145,5 +154,11 @@
       <button class="tbtn" onclick={toast.undo}>Undo</button>
     {/if}
     <button class="tbtn quiet" onclick={() => show(null)} aria-label="Dismiss">✕</button>
+    {#if toast.flag}
+      <div class="flag-note" role="note">
+        <span>Just a note: {toast.flag}</span>
+        <button class="tbtn quiet" onclick={() => (toast = { ...toast, flag: '' })} aria-label="Dismiss note">✕</button>
+      </div>
+    {/if}
   </div>
 {/if}

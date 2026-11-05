@@ -8,6 +8,8 @@
 //              before a kiln stage); moving on from waiting lands in the next
 //              path stage, which is the kiln stage.
 // terminal:    a path stage that finishes the pot.
+// hidden:      added on the potter's phone (see stageEdit.js). A hidden stage is skipped
+//              when a pot moves on, but pots sitting there and history lines keep it.
 // photo:       'offer' = after moving here, offer a skippable camera button;
 //              'open'  = open the camera at once (the photo is still optional).
 export const STAGES = [
@@ -30,3 +32,11 @@ export const STAGES = [
 ];
 
 export const WAITING_ID = 'waiting_staff';
+
+// Order checks for the gentle skip note (see flags.js). They name the seeded ids,
+// not labels, so a renamed stage still counts. Moving a pot into `to` without its
+// history ever holding `needs` is a skipped step.
+export const SKIP_RULES = [
+  { to: 'bisque_kiln', needs: 'bone_dry' }, // drying before the first firing
+  { to: 'final_firing', needs: 'glazed' }, // glazing before the glaze firing
+];
