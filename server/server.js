@@ -1,10 +1,12 @@
-// Static file server for the built app. All pot data lives on the phone
-// (IndexedDB); this process only serves the app shell and logs requests.
+// Serves the built app and keeps each potter's copy of their pots (see api.js).
+// Pots are saved on the phone first (IndexedDB); the server holds a copy.
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { readFile, stat } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createApi } from './api.js';
+import { openStore } from './store.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -58,8 +60,10 @@ async function serveFile(root, urlPath, res) {
 /**
  * Builds the HTTP server. `routes` maps a path to an async handler
  * (req, res) => void; it exists so tests can drive the error path.
+ * `store` (from openStore) turns on the /api/ routes.
  */
-export function createApp({ root, log = jsonLogger(), routes = {} } = {}) {
+export function createApp({ root, log = jsonLogger(), routes = {}, store = null } = {}) {
+  const api = store ? createApi({ store }) : null;
   const webRoot = resolve(root || join(here, '..', 'dist'));
 
   return createServer(async (req, res) => {
@@ -82,6 +86,10 @@ export function createApp({ root, log = jsonLogger(), routes = {} } = {}) {
     });
 
     try {
+      if (api && path.startsWith('/api/')) {
+        await api(req, res);
+        return;
+      }
       if (routes[path]) {
         await routes[path](req, res);
         return;
@@ -114,7 +122,8 @@ export function createApp({ root, log = jsonLogger(), routes = {} } = {}) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT) || 8080;
-  createApp().listen(port, '0.0.0.0', () => {
+  const store = openStore(process.env.DATABASE_PATH);
+  createApp({ store }).listen(port, '0.0.0.0', () => {
     process.stdout.write(
       JSON.stringify({ time: new Date().toISOString(), level: 'info', msg: `listening on ${port}` }) + '\n',
     );

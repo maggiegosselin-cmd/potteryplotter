@@ -213,6 +213,13 @@ h3 { font-size: 1rem; margin: 12px 0 2px; color: var(--clay-dark); }
 .coach-ring { outline: 5px solid #e0a23a; outline-offset: 3px; animation: ring 1.6s ease-in-out infinite; }
 @keyframes ring { 50% { outline-color: rgba(224, 162, 58, .35); } }
 @media (prefers-reduced-motion: reduce) { .coach-ring { animation: none; } }
+
+/* Copy status in the header: how old the last copy on the server is */
+.copy-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 8px; font-size: .95rem; }
+.copy-age { color: var(--ok); font-weight: 600; }
+.copy-age.stale { color: var(--bad); }
+.small-link { min-height: 44px; font-size: .95rem; }
+.banner.qr .qr-code { width: 220px; max-width: 100%; margin: 8px auto 0; background: #fff; }
 .export-counts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .export-counts li { background: #fff; border-radius: 14px; padding: 12px 16px; font-size: 1.1rem; }
 .export-counts strong { font-size: 1.6rem; display: block; }
