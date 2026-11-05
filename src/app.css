@@ -58,6 +58,8 @@ h2 { font-size: 1.15rem; margin: 18px 0 4px; color: var(--clay-dark); }
 .chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 10px; margin: 0 -16px; padding-inline: 16px; scrollbar-width: none; }
 .chip { flex: none; min-height: 48px; padding: 8px 16px; border: 2px solid #cdb89b; border-radius: 24px; background: #fff; color: var(--ink); font-size: 1rem; cursor: pointer; }
 .chip.on { background: var(--clay); border-color: var(--clay); color: #fff; font-weight: 700; }
+.chip.archive { border-style: dashed; }
+.chip.archive.on { border-style: solid; }
 .cards { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 14px; }
 .swipe-row { position: relative; border-radius: 18px; background: #e7d3b3; overflow: hidden; }
 .reveal { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--clay-dark); opacity: calc(var(--pull, 0) * 1.4); }
@@ -77,12 +79,14 @@ h2 { font-size: 1.15rem; margin: 18px 0 4px; color: var(--clay-dark); }
 .card .name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card .stage { color: var(--clay-dark); font-weight: 600; font-size: .95rem; }
 .card .when { color: #6b5b50; font-size: .9rem; }
+.card-btn { margin-top: 8px; min-height: 56px; padding: 8px 16px; border: 3px solid var(--clay); border-radius: 14px; background: #fff; color: var(--clay-dark); font-size: 1.05rem; font-weight: 700; cursor: pointer; }
+.card-btn:active { background: #fbefe6; }
 .silhouette { flex: none; }
-.screen.selecting { padding-bottom: calc(260px + env(safe-area-inset-bottom)); }
+.screen.selecting { padding-bottom: calc(400px + env(safe-area-inset-bottom)); }
 .select-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 640px; margin: 0 auto; }
 .select-bar .count { grid-column: 1 / -1; text-align: center; font-weight: 700; }
 .select-bar .btn { min-height: 80px; font-size: 1.2rem; box-shadow: none; max-width: none; }
-.select-bar .btn.secondary { grid-column: 1 / -1; }
+.select-bar .btn.wide, .select-bar .btn.secondary { grid-column: 1 / -1; }
 
 /* Pot screen */
 .hero { margin-top: 12px; border-radius: 18px; overflow: hidden; background: #d99a7d; display: grid; place-items: center; min-height: 160px; }

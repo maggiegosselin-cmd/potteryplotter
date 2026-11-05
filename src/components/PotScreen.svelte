@@ -2,11 +2,11 @@
   import { liveQuery } from 'dexie';
   import { db, editPot, updateEntry } from '../lib/db.js';
   import {
-    coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, nextStageId, progressOf, stageMap, toDateInput, DAY,
+    canArchive, coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, isArchived, nextStageId, progressOf, stageMap, toDateInput, DAY,
   } from '../lib/pots.js';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, potId, onback, onmove, askPhoto } = $props();
+  let { stages, potId, onback, onmove, onarchive, onrestore, askPhoto } = $props();
 
   const map = $derived(stageMap(stages));
   let pot = $state(undefined); // undefined while loading, null if it is gone
@@ -84,10 +84,17 @@
 
       {#if next}
         <button class="btn big" onclick={() => onmove([{ pot, to: next }])}>
-          {stage?.kind === 'waiting' ? 'On after firing' : 'Next'}: {map.get(next).label} →
+          Next: {map.get(next).label} →
         </button>
       {:else}
         <div class="banner">This pot has reached its last stage.</div>
+      {/if}
+
+      {#if isArchived(pot)}
+        <div class="banner">In the archive since {shortDate(pot.archivedAt)}. Its record, photos and history are kept.</div>
+        <button class="btn secondary" onclick={() => onrestore([pot])}>Restore from archive</button>
+      {:else if canArchive(pot, stages)}
+        <button class="btn secondary" onclick={() => onarchive([pot])}>Move to archive</button>
       {/if}
 
       <button class="btn secondary" onclick={() => askPhoto({ potId, entryId: currentEntry(pot).id })}>

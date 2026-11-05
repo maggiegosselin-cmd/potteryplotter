@@ -2,7 +2,9 @@
 //
 // A pot (version 2) is one row:
 //   { id, name, clay, notes, createdAt, photo|null, photoType, width, height,
-//     stage, stageSince, history: [entry, ...] }
+//     stage, stageSince, history: [entry, ...], archivedAt }
+// `archivedAt` is null, or the time an ended pot was moved to the archive. It is
+// separate from the stage: an archived pot keeps its end state, photos and history.
 // An entry is { id, stage, occurredAt, enteredAt, note, photo? }.
 //   occurredAt = when the stage really happened (may be back-filled, editable)
 //   enteredAt  = when the entry was typed into the app (never edited)
@@ -56,16 +58,41 @@ export function buildPot({ name, clay, notes, photo, width, height, stage, occur
       photoType: photo ? photo.type : '',
       width: photo ? width : 0,
       height: photo ? height : 0,
+      archivedAt: null,
     },
     history,
   );
 }
 
-/** Upgrades a version 1 pot (name, photo, createdAt) to the version 2 shape. Safe to run twice. */
+/**
+ * Upgrades a saved pot to the current shape: a version 1 pot (name, photo,
+ * createdAt) gets a history, and every pot gets `archivedAt`. The stage a pot is
+ * in is never changed. Safe to run twice.
+ */
 export function migratePot(pot) {
-  if (Array.isArray(pot.history) && pot.history.length) return pot;
-  const entry = makeEntry({ stage: 'formed', occurredAt: pot.createdAt, enteredAt: pot.createdAt });
-  return { ...withCurrent(pot, [entry]), clay: pot.clay || '', notes: pot.notes || '' };
+  let next = pot;
+  if (!Array.isArray(pot.history) || !pot.history.length) {
+    const entry = makeEntry({ stage: 'formed', occurredAt: pot.createdAt, enteredAt: pot.createdAt });
+    next = { ...withCurrent(pot, [entry]), clay: pot.clay || '', notes: pot.notes || '' };
+  }
+  return next.archivedAt === undefined ? { ...next, archivedAt: null } : next;
+}
+
+export const isArchived = (pot) => !!pot.archivedAt;
+
+/** Only a pot that has ended (an end state, or Finished) can be archived. */
+export function canArchive(pot, stages) {
+  return !isArchived(pot) && isDone(stageMap(stages).get(pot.stage));
+}
+
+/** Archives an ended pot, recording when. Returns the same pot if it cannot be archived. */
+export function archivePot(pot, stages, at = Date.now()) {
+  return canArchive(pot, stages) ? { ...pot, archivedAt: at } : pot;
+}
+
+/** Brings an archived pot back. Returns the same pot if it is not archived. */
+export function restorePot(pot) {
+  return isArchived(pot) ? { ...pot, archivedAt: null } : pot;
 }
 
 /** The path stage a pot last passed through (what a waiting pot is waiting to leave). */
@@ -124,11 +151,20 @@ export function daysLabel(days) {
   return days === 1 ? '1 day' : `${days} days`;
 }
 
-/** Longest-waiting first; pots in an end state (or finished) go last. */
-export function sortOldestFirst(pots, stages) {
-  const map = stageMap(stages);
-  const done = (p) => (isDone(map.get(p.stage)) ? 1 : 0);
-  return [...pots].sort((a, b) => done(a) - done(b) || a.stageSince - b.stageSince || a.id - b.id);
+/** Most recently added first (by when the pot was added, not when it last moved). */
+export function sortNewestFirst(pots) {
+  return [...pots].sort((a, b) => b.createdAt - a.createdAt || b.id - a.id);
+}
+
+/** "today", "3 days ago", "3 weeks ago", ... for how long ago a pot was added. */
+export function agoLabel(ts, now = Date.now()) {
+  const days = Math.max(0, Math.floor((now - ts) / DAY));
+  if (days === 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 14) return `${days} days ago`;
+  if (days < 60) return `${Math.floor(days / 7)} weeks ago`;
+  if (days < 730) return `${Math.floor(days / 30)} months ago`;
+  return `${Math.floor(days / 365)} years ago`;
 }
 
 /** 0..1 along the path, for the filling silhouette. */
@@ -151,26 +187,33 @@ export function countByStage(pots) {
   return counts;
 }
 
-/** Fictional pots, no photos, for trying the app out. */
+/** Fictional pots, no photos, for trying the app out. Two of them are archived. */
 export function examplePots(stages, now = Date.now()) {
+  // [name, clay, stage, days in that stage, days since added, archived]
   const specs = [
-    ['Tall mug', 'Stoneware', 'formed', 2],
-    ['Pinch bowl', 'Speckled buff', 'leather_hard', 6],
-    ['Slab vase', 'Stoneware', 'bone_dry', 12],
-    ['Tea set cup', 'Porcelain', 'waiting_staff', 9],
-    ['Coil planter', 'Terracotta', 'bisque_fired', 4],
-    ['Spoon rest', 'Stoneware', 'glazed', 15],
-    ['Serving dish', 'Speckled buff', 'finished', 3],
-    ['Cracked jar', 'Stoneware', 'failed', 20],
-    ['Wedged lump', 'Porcelain', 'lump', 1],
+    ['Pinch bowl', 'Speckled buff', 'bisque_kiln', 2, 0],
+    ['Wedged lump', 'Porcelain', 'lump', 1, 1],
+    ['Tall mug', 'Stoneware', 'formed', 2, 2],
+    ['Tall vase', 'Stoneware', 'glazed', 3, 3],
+    ['Coil planter', 'Terracotta', 'bisque_fired', 4, 6],
+    ['Slab vase', 'Stoneware', 'bone_dry', 12, 8],
+    ['Mug set', 'Stoneware', 'final_firing', 2, 9],
+    ['Tea set cup', 'Porcelain', 'waiting_staff', 9, 14],
+    ['Spoon rest', 'Stoneware', 'glazed', 15, 18],
+    ['Teapot', 'Stoneware', 'finished', 5, 21],
+    ['Bud vase', 'Porcelain', 'reclaimed', 10, 28],
+    ['Serving dish', 'Speckled buff', 'finished', 3, 40, true],
+    ['Cracked jar', 'Stoneware', 'failed', 20, 55, true],
   ];
+  // Where a pot that is not on the path (or is waiting) came from.
+  const from = { waiting_staff: 'bone_dry', failed: 'leather_hard', reclaimed: 'formed' };
   const path = pathStages(stages);
-  return specs.map(([name, clay, stage, days], i) => {
-    const entered = now - (days + 30) * DAY + i * 60_000;
+  return specs.map(([name, clay, stage, days, added, archived], i) => {
+    const entered = now - added * DAY - i * 60_000;
     const since = now - days * DAY;
-    const upto = stage === 'waiting_staff' ? 'bone_dry' : stage === 'failed' ? 'leather_hard' : stage;
+    const upto = from[stage] || stage;
     const steps = path.slice(0, path.findIndex((s) => s.id === upto) + 1).map((s) => s.id);
-    if (stage === 'waiting_staff' || stage === 'failed') steps.push(stage);
+    if (from[stage]) steps.push(stage);
     const history = steps.map((id, k) =>
       makeEntry({
         stage: id,
@@ -178,7 +221,10 @@ export function examplePots(stages, now = Date.now()) {
         enteredAt: entered,
       }),
     );
-    return withCurrent({ name, clay, notes: '', createdAt: entered, photo: null, photoType: '', width: 0, height: 0 }, history);
+    return withCurrent(
+      { name, clay, notes: '', createdAt: entered, photo: null, photoType: '', width: 0, height: 0, archivedAt: archived ? now - 2 * DAY : null },
+      history,
+    );
   });
 }
 

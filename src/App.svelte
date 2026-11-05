@@ -1,6 +1,6 @@
 <script>
   import { liveQuery } from 'dexie';
-  import { db, changeStages, undoChanges, updateEntry, explainStorageError } from './lib/db.js';
+  import { db, changeStages, undoChanges, updateEntry, archivePots, restorePots, explainStorageError } from './lib/db.js';
   import { newId, stageMap } from './lib/pots.js';
   import { shrinkPhoto } from './lib/shrink.js';
   import PotList from './components/PotList.svelte';
@@ -83,6 +83,40 @@
       show({ text: err.message, error: true });
     }
   }
+
+  /** pots: ended pots to archive. One write; the bar offers undo. */
+  async function archive(pots) {
+    try {
+      const done = await archivePots(pots.map((p) => p.id));
+      if (!done.length) return;
+      const who = done.length === 1 ? pots.find((p) => p.id === done[0]).name || `Pot ${done[0]}` : `${done.length} pots`;
+      show({
+        text: `${who} moved to the archive`,
+        undo: async () => {
+          try {
+            await restorePots(done);
+            show(null);
+          } catch (err) {
+            show({ text: err.message, error: true });
+          }
+        },
+      });
+    } catch (err) {
+      show({ text: err.message, error: true });
+    }
+  }
+
+  /** pots: archived pots to bring back to the main list. */
+  async function restore(pots) {
+    try {
+      const done = await restorePots(pots.map((p) => p.id));
+      if (!done.length) return;
+      const who = done.length === 1 ? pots.find((p) => p.id === done[0]).name || `Pot ${done[0]}` : `${done.length} pots`;
+      show({ text: `${who} restored` });
+    } catch (err) {
+      show({ text: err.message, error: true });
+    }
+  }
 </script>
 
 <input class="hidden-input" type="file" accept="image/*" capture="environment" bind:this={cameraInput} onchange={photoPicked} tabindex="-1" aria-hidden="true" />
@@ -90,10 +124,10 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} />
+  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} />
 
   {#if openId !== null}
-    <PotScreen {stages} potId={openId} onback={() => (openId = null)} onmove={move} {askPhoto} />
+    <PotScreen {stages} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} />
   {/if}
 
   {#if adding}

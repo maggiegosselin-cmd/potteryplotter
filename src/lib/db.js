@@ -1,11 +1,14 @@
 import Dexie from 'dexie';
 import { STAGES } from './stages.js';
-import { applyStage, buildPot, editEntry, examplePots, migratePot, undoEntry } from './pots.js';
+import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, restorePot, undoEntry } from './pots.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
 // photo as a Blob, so the record and its photo are written in one transaction.
 // Version 2 adds the `stages` table and, inside each pot, a dated history list
 // (the pot and its history entries are one row, so a stage change is one write).
+// Version 3 adds the In bisque kiln and In final firing stage rows (and the new
+// stage order) and gives each pot an `archivedAt` (null = not archived). Pots
+// keep the stage they were in; none is touched except to add that field.
 export const db = new Dexie('pot-log');
 
 db.version(1).stores({
@@ -13,6 +16,18 @@ db.version(1).stores({
 });
 
 db.version(2)
+  .stores({
+    pots: '++id, createdAt, stage, stageSince',
+    stages: 'id, order',
+  })
+  .upgrade(async (tx) => {
+    await tx.table('stages').bulkPut(STAGES);
+    await tx.table('pots').toCollection().modify((pot) => {
+      Object.assign(pot, migratePot(pot));
+    });
+  });
+
+db.version(3)
   .stores({
     pots: '++id, createdAt, stage, stageSince',
     stages: 'id, order',
@@ -115,6 +130,46 @@ export function undoChanges(changes) {
         const pot = await db.pots.get(c.potId);
         if (pot) await db.pots.put(undoEntry(pot, c.entryId));
       }
+    }),
+  );
+}
+
+/**
+ * Archives pots that have ended, in one transaction. Pots still in progress are
+ * left alone. Resolves the ids that were archived.
+ */
+export function archivePots(ids, at = Date.now()) {
+  return write(() =>
+    db.transaction('rw', db.pots, db.stages, async () => {
+      const stages = await db.stages.toArray();
+      const done = [];
+      for (const id of ids) {
+        const pot = await db.pots.get(id);
+        if (!pot) continue;
+        const next = archivePot(pot, stages, at);
+        if (next === pot) continue;
+        await db.pots.put(next);
+        done.push(id);
+      }
+      return done;
+    }),
+  );
+}
+
+/** Brings archived pots back to the main list. Resolves the ids that were restored. */
+export function restorePots(ids) {
+  return write(() =>
+    db.transaction('rw', db.pots, async () => {
+      const done = [];
+      for (const id of ids) {
+        const pot = await db.pots.get(id);
+        if (!pot) continue;
+        const next = restorePot(pot);
+        if (next === pot) continue;
+        await db.pots.put(next);
+        done.push(id);
+      }
+      return done;
     }),
   );
 }

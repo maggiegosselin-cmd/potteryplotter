@@ -2,15 +2,19 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { STAGES } from '../src/lib/stages.js';
 import {
-  DAY, applyStage, buildPot, daysInStage, editEntry, endStages, examplePots, fromDateInput, migratePot, nextStageId,
-  pathStages, progressOf, sortOldestFirst, toDateInput, undoEntry,
+  DAY, agoLabel, applyStage, archivePot, buildPot, canArchive, countByStage, daysInStage, editEntry, endStages, examplePots,
+  fromDateInput, isArchived, migratePot, nextStageId, pathStages, progressOf, restorePot, sortNewestFirst, toDateInput, undoEntry,
 } from '../src/lib/pots.js';
 import { swipeThreshold } from '../src/lib/swipe.js';
 
 const NOW = Date.UTC(2025, 5, 1, 12);
 
-test('stages are data: eight on the path, one waiting state, five end states', () => {
-  assert.equal(pathStages(STAGES).length, 8);
+test('stages are data: ten on the path (two of them kiln stages), one waiting state, five end states', () => {
+  assert.deepEqual(
+    pathStages(STAGES).map((s) => s.id).slice(3, 9),
+    ['bone_dry', 'bisque_kiln', 'bisque_fired', 'glazed', 'final_firing', 'glaze_fired'],
+  );
+  assert.equal(pathStages(STAGES).length, 10);
   assert.equal(STAGES.filter((s) => s.kind === 'waiting').length, 1);
   assert.equal(endStages(STAGES).length, 5);
 });
@@ -23,7 +27,17 @@ test('a version 1 pot migrates without losing anything, twice over', () => {
   assert.equal(pot.stage, 'formed');
   assert.equal(pot.stageSince, old.createdAt);
   assert.equal(pot.history.length, 1);
+  assert.equal(pot.archivedAt, null);
   assert.equal(migratePot(pot), pot);
+});
+
+test('a saved version 2 pot keeps its stage and history when it gains archivedAt', () => {
+  const saved = buildPot({ stage: 'bisque_fired', now: NOW, stages: STAGES });
+  delete saved.archivedAt;
+  const pot = migratePot(saved);
+  assert.equal(pot.stage, 'bisque_fired');
+  assert.equal(pot.history, saved.history);
+  assert.equal(pot.archivedAt, null);
 });
 
 test('a pot can start at any stage with no photo, earlier stages back-filled as remembered', () => {
@@ -41,14 +55,21 @@ test('time in stage counts from when it happened, not when it was entered', () =
   assert.equal(pot.history[0].enteredAt, NOW);
 });
 
-test('bone dry goes to waiting on staff, then on to bisque fired; glazed likewise', () => {
+test('bone dry goes to waiting on staff, into the bisque kiln, then bisque fired; glazed likewise', () => {
   let pot = buildPot({ stage: 'bone_dry', now: NOW, stages: STAGES });
   assert.equal(nextStageId(pot, STAGES), 'waiting_staff');
   pot = applyStage(pot, 'waiting_staff', { enteredAt: NOW });
+  assert.equal(nextStageId(pot, STAGES), 'bisque_kiln');
+  pot = applyStage(pot, 'bisque_kiln', { enteredAt: NOW });
   assert.equal(nextStageId(pot, STAGES), 'bisque_fired');
   pot = applyStage(pot, 'bisque_fired', { enteredAt: NOW });
   assert.equal(nextStageId(pot, STAGES), 'glazed');
-  assert.equal(nextStageId(buildPot({ stage: 'glazed', now: NOW, stages: STAGES }), STAGES), 'waiting_staff');
+  pot = applyStage(pot, 'glazed', { enteredAt: NOW });
+  assert.equal(nextStageId(pot, STAGES), 'waiting_staff');
+  pot = applyStage(pot, 'waiting_staff', { enteredAt: NOW });
+  assert.equal(nextStageId(pot, STAGES), 'final_firing');
+  pot = applyStage(pot, 'final_firing', { enteredAt: NOW });
+  assert.equal(nextStageId(pot, STAGES), 'glaze_fired');
 });
 
 test('finished and end states have no next stage', () => {
@@ -75,18 +96,58 @@ test('editing a history date moves the stage clock but not the entry time', () =
   assert.equal(edited.history[1].enteredAt, NOW);
 });
 
-test('list is longest-waiting first with finished and end states last', () => {
+test('list is newest first by date added, not by last stage change', () => {
   const pots = examplePots(STAGES, NOW).map((p, i) => ({ ...p, id: i + 1 }));
-  const order = sortOldestFirst(pots, STAGES);
-  const ids = order.map((p) => p.name);
-  assert.equal(ids[0], 'Spoon rest');
-  assert.deepEqual(ids.slice(-2), ['Cracked jar', 'Serving dish']);
-  assert.ok(order.findIndex((p) => p.stage === 'failed') > order.findIndex((p) => p.stage === 'lump'));
+  const order = sortNewestFirst(pots);
+  assert.equal(order[0].name, 'Pinch bowl');
+  assert.equal(order[order.length - 1].name, 'Cracked jar');
+  assert.ok(order.every((p, i) => i === 0 || order[i - 1].createdAt >= p.createdAt));
+  // moving a pot on does not change where it sits
+  const moved = pots.map((p) => (p.name === 'Cracked jar' ? applyStage(p, 'abandoned', { enteredAt: NOW }) : p));
+  assert.equal(sortNewestFirst(moved).at(-1).name, 'Cracked jar');
+});
+
+test('only an ended pot can be archived; the archive keeps stage and history and records the date', () => {
+  const inProgress = buildPot({ stage: 'glazed', now: NOW, stages: STAGES });
+  assert.equal(canArchive(inProgress, STAGES), false);
+  assert.equal(archivePot(inProgress, STAGES, NOW), inProgress);
+
+  for (const end of ['finished', 'flawed', 'failed', 'reclaimed', 'abandoned']) {
+    const ended = end === 'finished' ? buildPot({ stage: 'finished', now: NOW, stages: STAGES }) : applyStage(inProgress, end, { enteredAt: NOW });
+    assert.equal(canArchive(ended, STAGES), true, end);
+    const archived = archivePot(ended, STAGES, NOW + DAY);
+    assert.equal(archived.archivedAt, NOW + DAY);
+    assert.equal(archived.stage, end);
+    assert.equal(archived.history, ended.history);
+    assert.equal(canArchive(archived, STAGES), false);
+    const back = restorePot(archived);
+    assert.equal(isArchived(back), false);
+    assert.equal(back.stage, end);
+  }
+});
+
+test('example pots: archived ones are left out of the stage counts, and the new stages have counts', () => {
+  const pots = examplePots(STAGES, NOW);
+  assert.equal(pots.filter(isArchived).length, 2);
+  assert.ok(pots.filter(isArchived).every((p) => canArchive({ ...p, archivedAt: null }, STAGES)));
+  const counts = countByStage(pots.filter((p) => !isArchived(p)));
+  assert.equal(counts.get('bisque_kiln'), 1);
+  assert.equal(counts.get('final_firing'), 1);
+  assert.equal(counts.get('failed'), undefined);
+});
+
+test('how long ago a pot was added reads naturally', () => {
+  assert.equal(agoLabel(NOW, NOW), 'today');
+  assert.equal(agoLabel(NOW - 3 * DAY, NOW), '3 days ago');
+  assert.equal(agoLabel(NOW - 21 * DAY, NOW), '3 weeks ago');
 });
 
 test('the silhouette fills along the path', () => {
   assert.equal(progressOf(buildPot({ stage: 'lump', now: NOW, stages: STAGES }), STAGES), 0);
   assert.equal(progressOf(buildPot({ stage: 'finished', now: NOW, stages: STAGES }), STAGES), 1);
+  // the kiln stages are steps along the path: 4 of 9 gaps for In bisque kiln
+  assert.equal(progressOf(buildPot({ stage: 'bisque_kiln', now: NOW, stages: STAGES }), STAGES), 4 / 9);
+  assert.equal(progressOf(buildPot({ stage: 'final_firing', now: NOW, stages: STAGES }), STAGES), 7 / 9);
 });
 
 test('dates round-trip through the date input form', () => {
