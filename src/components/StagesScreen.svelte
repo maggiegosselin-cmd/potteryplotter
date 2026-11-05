@@ -27,7 +27,8 @@
   async function commit(next) {
     if (next === stages) return;
     try {
-      await saveStages(next);
+      // Rows come from $state, which wraps them in proxies IndexedDB cannot clone.
+      await saveStages($state.snapshot(next));
       error = '';
     } catch {
       error = 'The stages were not saved. Please try again.';
