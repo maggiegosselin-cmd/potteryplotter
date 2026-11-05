@@ -8,6 +8,9 @@
 //              before a kiln stage); moving on from waiting lands in the next
 //              path stage, which is the kiln stage.
 // terminal:    a path stage that finishes the pot.
+// finished:    the pot is done and worth showing: it is offered its finished photo and
+//              glaze layers, and appears in the finished-pots view.
+// glaze:       'offer' = after moving here, offer a skippable button to record glaze layers.
 // photo:       'offer' = after moving here, offer a skippable camera button;
 //              'open'  = open the camera at once (the photo is still optional).
 export const STAGES = [
@@ -17,12 +20,12 @@ export const STAGES = [
   { id: 'bone_dry', label: 'Bone dry', kind: 'path', order: 4, viaWaiting: true },
   { id: 'bisque_kiln', label: 'In bisque kiln', kind: 'path', order: 5 },
   { id: 'bisque_fired', label: 'Bisque fired', kind: 'path', order: 6, photo: 'offer' },
-  { id: 'glazed', label: 'Glazed', kind: 'path', order: 7, viaWaiting: true },
+  { id: 'glazed', label: 'Glazed', kind: 'path', order: 7, viaWaiting: true, glaze: 'offer' },
   { id: 'final_firing', label: 'In final firing', kind: 'path', order: 8 },
   { id: 'glaze_fired', label: 'Glaze fired', kind: 'path', order: 9 },
-  { id: 'finished', label: 'Finished', kind: 'path', order: 10, terminal: true, photo: 'offer' },
+  { id: 'finished', label: 'Finished', kind: 'path', order: 10, terminal: true, finished: true },
   { id: 'waiting_staff', label: 'Waiting on staff', kind: 'waiting', order: 20 },
-  { id: 'flawed', label: 'Finished, with a flaw', kind: 'end', order: 30, photo: 'offer' },
+  { id: 'flawed', label: 'Finished, with a flaw', kind: 'end', order: 30, finished: true },
   { id: 'failed', label: 'Failed', kind: 'end', order: 31, photo: 'open' },
   { id: 'reclaimed', label: 'Reclaimed', kind: 'end', order: 32 },
   { id: 'abandoned', label: 'Abandoned', kind: 'end', order: 33 },
@@ -30,3 +33,4 @@ export const STAGES = [
 ];
 
 export const WAITING_ID = 'waiting_staff';
+export const GLAZED_ID = 'glazed';

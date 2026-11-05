@@ -4,12 +4,16 @@
   import { shrinkPhoto } from '../lib/shrink.js';
   import { requestPersistence } from '../lib/persist.js';
   import { makeSamplePhoto } from '../lib/samplePhoto.js';
-  import { fromDateInput, pathStages, toDateInput } from '../lib/pots.js';
+  import { earlierStages, fromDateInput, isFinished, startStages, toDateInput } from '../lib/pots.js';
+  import { stackToLayers } from '../lib/glazes.js';
+  import GlazePicker from './GlazePicker.svelte';
 
-  let { stages, onsaved, oncancel } = $props();
+  let { stages, glazes, onsaved, oncancel } = $props();
 
   let cameraInput;
   let libraryInput;
+  let finishedCameraInput;
+  let finishedLibraryInput;
   let step = $state('form'); // form | shrinking | saving
   let photo = $state(null); // { blob, width, height } — optional
   let previewUrl = $state('');
@@ -20,12 +24,20 @@
   let when = $state(toDateInput(Date.now()));
   let earlier = $state({}); // earlier stage id -> yyyy-mm-dd, only the ones remembered
   let error = $state('');
+  // A pot recorded as finished gets its finished photo and glaze layers here too.
+  let finishedPhoto = $state(null); // { blob, url } — optional
+  let useSame = $state(false); // use the pot photo above as the finished photo
+  let stack = $state([]); // glaze layers, top coat first
 
-  const path = $derived(pathStages(stages));
-  const before = $derived(path.slice(0, Math.max(0, path.findIndex((s) => s.id === stage))));
+  const finishing = $derived(isFinished(stages.find((s) => s.id === stage)));
+  const options = $derived(startStages(stages));
+  const before = $derived(earlierStages(stage, stages));
 
   // The camera stays closed until the potter asks for it.
-  onMount(() => () => previewUrl && URL.revokeObjectURL(previewUrl));
+  onMount(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (finishedPhoto) URL.revokeObjectURL(finishedPhoto.url);
+  });
 
   async function handleFile(file) {
     if (!file) return;
@@ -40,6 +52,41 @@
       error = err.message;
     }
     step = 'form';
+  }
+
+  async function handleFinishedFile(file) {
+    if (!file) return;
+    error = '';
+    step = 'shrinking';
+    try {
+      const { blob } = await shrinkPhoto(file);
+      if (finishedPhoto) URL.revokeObjectURL(finishedPhoto.url);
+      finishedPhoto = { blob, url: URL.createObjectURL(blob) };
+      useSame = false;
+    } catch (err) {
+      error = err.message;
+    }
+    step = 'form';
+  }
+
+  function pickedFinished(event) {
+    const input = event.currentTarget;
+    const file = input.files && input.files[0];
+    input.value = '';
+    handleFinishedFile(file);
+  }
+
+  async function useFinishedSample() {
+    try {
+      await handleFinishedFile(await makeSamplePhoto());
+    } catch {
+      error = "Couldn't make a test photo on this device.";
+    }
+  }
+
+  function removeFinishedPhoto() {
+    if (finishedPhoto) URL.revokeObjectURL(finishedPhoto.url);
+    finishedPhoto = null;
   }
 
   function picked(event) {
@@ -61,6 +108,7 @@
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     photo = null;
     previewUrl = '';
+    useSame = false;
   }
 
   async function save() {
@@ -80,6 +128,8 @@
         stage,
         occurredAt: fromDateInput(when) ?? Date.now(),
         earlier: dates,
+        layers: finishing ? stackToLayers(stack) : undefined,
+        finishedPhoto: finishing ? (useSame && photo ? { initial: true } : finishedPhoto ? { blob: finishedPhoto.blob } : undefined) : undefined,
       });
     } catch (err) {
       error = err.message;
@@ -97,6 +147,8 @@
 
     <input class="hidden-input" type="file" accept="image/*" capture="environment" bind:this={cameraInput} onchange={picked} tabindex="-1" aria-hidden="true" />
     <input class="hidden-input" type="file" accept="image/*" bind:this={libraryInput} onchange={picked} tabindex="-1" aria-hidden="true" />
+    <input class="hidden-input" type="file" accept="image/*" capture="environment" bind:this={finishedCameraInput} onchange={pickedFinished} tabindex="-1" aria-hidden="true" />
+    <input class="hidden-input" type="file" accept="image/*" bind:this={finishedLibraryInput} onchange={pickedFinished} tabindex="-1" aria-hidden="true" />
 
     {#if error}
       <div class="banner error" role="alert">{error}</div>
@@ -104,7 +156,7 @@
 
     <h2>Where is it now?</h2>
     <div class="stage-pick" role="radiogroup" aria-label="Stage">
-      {#each path as s (s.id)}
+      {#each options as s (s.id)}
         <button class="pick" class:on={stage === s.id} role="radio" aria-checked={stage === s.id} onclick={() => (stage = s.id)}>
           {s.label}
         </button>
@@ -129,6 +181,7 @@
     <input type="text" placeholder="Clay type (optional)" aria-label="Clay type" bind:value={clay} autocomplete="off" />
     <textarea rows="2" placeholder="Notes (optional)" aria-label="Notes" bind:value={notes}></textarea>
 
+    {#if finishing}<h2>Pot photo</h2>{/if}
     {#if step === 'shrinking'}
       <p class="banner" role="status">Getting the photo ready…</p>
     {:else if photo}
@@ -138,6 +191,26 @@
       <button class="btn secondary" onclick={() => cameraInput.click()}>📷 Add a photo (optional)</button>
       <button class="btn secondary small" onclick={() => libraryInput.click()}>Choose from photos</button>
       <button class="link" onclick={useSample}>No camera? Use a test photo</button>
+    {/if}
+
+    {#if finishing}
+      <h2>Finished photo</h2>
+      {#if finishedPhoto}
+        <img class="preview" src={finishedPhoto.url} alt="Finished pot" />
+        <button class="btn secondary small" onclick={removeFinishedPhoto}>Remove finished photo</button>
+      {:else if useSame && photo}
+        <p class="banner">The pot photo above will be its finished photo.</p>
+        <button class="btn secondary small" onclick={() => (useSame = false)}>Don't use it</button>
+      {:else}
+        <button class="btn secondary" onclick={() => finishedCameraInput.click()} disabled={step !== 'form'}>📷 Take the finished photo (optional)</button>
+        <button class="btn secondary small" onclick={() => finishedLibraryInput.click()} disabled={step !== 'form'}>Choose from photos</button>
+        {#if photo}
+          <button class="btn secondary small" onclick={() => (useSame = true)}>Use the pot photo above</button>
+        {/if}
+        <button class="link" onclick={useFinishedSample}>No camera? Use a test photo</button>
+      {/if}
+
+      <GlazePicker {glazes} bind:stack />
     {/if}
 
     <button class="btn" onclick={save} disabled={step !== 'form'}>

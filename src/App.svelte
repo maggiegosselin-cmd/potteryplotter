@@ -1,14 +1,19 @@
 <script>
   import { liveQuery } from 'dexie';
   import { db, changeStages, undoChanges, updateEntry, archivePots, restorePots, explainStorageError } from './lib/db.js';
-  import { newId, stageMap } from './lib/pots.js';
+  import { isFinished, newId, stageMap } from './lib/pots.js';
   import { shrinkPhoto } from './lib/shrink.js';
   import PotList from './components/PotList.svelte';
   import AddPot from './components/AddPot.svelte';
   import PotScreen from './components/PotScreen.svelte';
+  import GlazeSheet from './components/GlazeSheet.svelte';
+  import FinishedPots from './components/FinishedPots.svelte';
 
   let stages = $state(null); // the stage rows from the database; null until read
+  let glazes = $state([]); // the potter's glaze shelf
   let adding = $state(false);
+  let showFinished = $state(false);
+  let sheetPotId = $state(null); // the pot whose glazes (and finished photo) are being recorded
   let openId = $state(null);
   let notice = $state('');
   let toast = $state(null); // { text, error?, undo?, photo? }
@@ -24,6 +29,14 @@
     return () => sub.unsubscribe();
   });
 
+  $effect(() => {
+    const sub = liveQuery(() => db.glazes.toArray()).subscribe({
+      next: (rows) => (glazes = rows),
+      error: (err) => (toast = { text: explainStorageError(err).message, error: true }),
+    });
+    return () => sub.unsubscribe();
+  });
+
   function show(next, ms = 10000) {
     clearTimeout(toastTimer);
     toast = next;
@@ -33,6 +46,11 @@
   function saved() {
     adding = false;
     notice = 'Pot saved ✓';
+  }
+
+  function sheetClosed(text) {
+    sheetPotId = null;
+    if (text) show({ text }, 4000);
   }
 
   // Must run straight from a tap: that is what lets the camera open.
@@ -66,13 +84,17 @@
     try {
       const done = await changeStages(changes);
       const label = map.get(items[0].to).label;
+      // A pot that is finished (or finished with a flaw) is offered its glazes and finished photo at once.
+      if (done.length && isFinished(only)) sheetPotId = changes[0].potId;
       const who = items.length === 1 ? items[0].pot.name || `Pot ${items[0].pot.id}` : `${done.length} pots`;
       show({
         text: `${who} → ${label}`,
         photo: only?.photo === 'offer' ? target : null,
+        glaze: only?.glaze === 'offer' ? changes[0].potId : null,
         undo: async () => {
           try {
             await undoChanges([...done].reverse());
+            sheetPotId = null;
             show(null);
           } catch (err) {
             show({ text: err.message, error: true });
@@ -124,14 +146,22 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} />
+  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} onfinished={() => (showFinished = true)} />
+
+  {#if showFinished}
+    <FinishedPots {stages} {glazes} onopen={(id) => (openId = id)} onback={() => (showFinished = false)} />
+  {/if}
 
   {#if openId !== null}
-    <PotScreen {stages} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} />
+    <PotScreen {stages} {glazes} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} onglazes={(id) => (sheetPotId = id)} />
   {/if}
 
   {#if adding}
-    <AddPot {stages} onsaved={saved} oncancel={() => (adding = false)} />
+    <AddPot {stages} {glazes} onsaved={saved} oncancel={() => (adding = false)} />
+  {/if}
+
+  {#if sheetPotId !== null}
+    <GlazeSheet {stages} {glazes} potId={sheetPotId} onclose={sheetClosed} />
   {/if}
 {/if}
 
@@ -140,6 +170,9 @@
     <span class="msg">{toast.text}</span>
     {#if toast.photo}
       <button class="tbtn" onclick={() => askPhoto(toast.photo)}>📷 Add photo</button>
+    {/if}
+    {#if toast.glaze}
+      <button class="tbtn" onclick={() => (sheetPotId = toast.glaze)}>🎨 Add glazes</button>
     {/if}
     {#if toast.undo}
       <button class="tbtn" onclick={toast.undo}>Undo</button>
