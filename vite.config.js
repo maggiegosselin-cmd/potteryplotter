@@ -14,13 +14,13 @@ export default defineConfig({
       manifest: {
         name: 'Pot Log',
         short_name: 'Pot Log',
-        description: 'Log your pots with a photo, even with no signal.',
+        description: 'Follow your pots from lump to finished, even with no signal.',
         start_url: '/',
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f4e6d0',
-        theme_color: '#b5583a',
+        background_color: '#f2ead9',
+        theme_color: '#a2412e',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
