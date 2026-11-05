@@ -2,12 +2,14 @@
   import { liveQuery } from 'dexie';
   import { db, editPot, updateEntry } from '../lib/db.js';
   import {
-    canArchive, coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, isArchived, nextStageId, progressOf, stageMap, toDateInput, DAY,
+    canArchive, canGlaze, coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, isArchived, isFinished, nextStageId, progressOf,
+    stageMap, toDateInput, DAY,
   } from '../lib/pots.js';
   import { potNotes } from '../lib/stageEdit.js';
+  import { glazeLine, layerDetail, layersToStack, nameLookup } from '../lib/glazes.js';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, potId, onback, onmove, onarchive, onrestore, askPhoto } = $props();
+  let { stages, glazes, potId, onback, onmove, onarchive, onrestore, askPhoto, onglazes } = $props();
 
   const map = $derived(stageMap(stages));
   let pot = $state(undefined); // undefined while loading, null if it is gone
@@ -47,6 +49,8 @@
   const stage = $derived(pot ? map.get(pot.stage) : null);
   let notesDismissed = $state(false);
   const notes = $derived(pot && !notesDismissed ? potNotes(pot, stages) : []);
+  const nameOf = $derived(nameLookup(glazes));
+  const layers = $derived(pot ? layersToStack(pot.glazeLayers) : []); // top coat first
 
   const shortDate = (t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -110,6 +114,30 @@
       <button class="btn secondary" onclick={() => askPhoto({ potId, entryId: currentEntry(pot).id })}>
         📷 {url ? 'Add another photo' : 'Add a photo'}
       </button>
+
+      {#if canGlaze(pot, stages)}
+        <h2>{isFinished(stage) ? 'Glazes and finished photo' : 'Glazes'}</h2>
+        {#if layers.length}
+          <p class="glaze-line">{glazeLine(pot.glazeLayers, nameOf)}</p>
+          <ol class="layer-list" aria-label="Glaze layers, top coat first">
+            {#each layers as layer, i (i)}
+              <li><strong>{nameOf(layer.glazeId)}</strong>{layerDetail(layer) ? ` · ${layerDetail(layer)}` : ''}</li>
+            {/each}
+          </ol>
+        {:else}
+          <p class="gap">No glaze recorded yet</p>
+        {/if}
+        {#if isFinished(stage)}
+          {#if pot.finishedPhoto}
+            <p class="when">The finished photo is the one shown at the top.</p>
+          {:else}
+            <p class="gap">No finished photo yet</p>
+          {/if}
+        {/if}
+        <button class="btn secondary" onclick={() => onglazes(potId)}>
+          🎨 {isFinished(stage) ? 'Edit glazes and finished photo' : layers.length ? 'Edit glazes' : 'Add glazes'}
+        </button>
+      {/if}
 
       <h2>End it differently</h2>
       <div class="ends">

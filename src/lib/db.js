@@ -1,7 +1,12 @@
 import Dexie from 'dexie';
 import { STAGES, upgradeStage } from './stages.js';
 import { addedStage, editedStage, orderAfter, reorder } from './stageEdit.js';
-import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, restorePot, undoEntry } from './pots.js';
+import {
+  applyFinish, applyGlazes, applyStage, archivePot, buildPot, editEntry, examplePhotoNames, examplePots, EXAMPLE_GLAZES, isFinished,
+  migratePot, restorePot, stageMap, undoEntry,
+} from './pots.js';
+import { InputError, cleanGlazeName, findGlaze, usesGlaze } from './glazes.js';
+import { makeSwatchPhoto } from './samplePhoto.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
 // photo as a Blob, so the record and its photo are written in one transaction.
@@ -10,6 +15,10 @@ import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, r
 // Version 3 adds the In bisque kiln and In final firing stage rows (and the new
 // stage order) and gives each pot an `archivedAt` (null = not archived). Pots
 // keep the stage they were in; none is touched except to add that field.
+// Version 4 adds the potter's `glazes` shelf (id, name), which starts empty, and
+// gives each pot `glazeLayers` (glaze ids with coverage and method) and a
+// `finishedPhoto` Blob, both in the pot's own row. Pots keep their stage.
+// Version 5 adds `edited`, `hidden` and `role` to the stage rows (see below).
 export const db = new Dexie('pot-log');
 
 db.version(1).stores({
@@ -40,12 +49,26 @@ db.version(3)
     });
   });
 
-// Version 4 gives each stage row `edited`, `hidden` and `role`. Only rows the
-// potter has not edited are rewritten; pots are not touched.
 db.version(4)
   .stores({
     pots: '++id, createdAt, stage, stageSince',
     stages: 'id, order',
+    glazes: '++id, name',
+  })
+  .upgrade(async (tx) => {
+    await tx.table('stages').bulkPut(STAGES);
+    await tx.table('pots').toCollection().modify((pot) => {
+      Object.assign(pot, migratePot(pot));
+    });
+  });
+
+// Version 5 gives each stage row `edited`, `hidden` and `role`. Only rows the
+// potter has not edited are rewritten; pots are not touched.
+db.version(5)
+  .stores({
+    pots: '++id, createdAt, stage, stageSince',
+    stages: 'id, order',
+    glazes: '++id, name',
   })
   .upgrade((tx) =>
     tx.table('stages').toCollection().modify((row) => {
@@ -92,7 +115,7 @@ async function write(fn) {
   try {
     return await fn();
   } catch (err) {
-    if (err instanceof StorageError) throw err;
+    if (err instanceof StorageError || err instanceof InputError) throw err;
     if (err && err.message === 'pot did not read back') {
       throw new StorageError('unverified', "The pot could not be confirmed in storage. Please try again.", err);
     }
@@ -105,15 +128,25 @@ async function write(fn) {
  * back so success is only reported once it is really in storage.
  */
 export function savePot(fields) {
-  return write(async () => {
-    const stages = await db.stages.toArray();
-    const id = await db.pots.add(buildPot({ ...fields, stages }));
-    const saved = await db.pots.get(id);
-    if (!saved || (fields.photo && (!saved.photo || saved.photo.size !== fields.photo.size))) {
-      throw new Error('pot did not read back');
-    }
-    return saved;
-  });
+  return write(() =>
+    db.transaction('rw', db.pots, db.stages, db.glazes, async () => {
+      const stages = await db.stages.toArray();
+      let pot = buildPot({ ...fields, stages });
+      // A finished pot can be saved with its glaze layers and finished photo in the same write.
+      const { layers, finishedPhoto } = fields;
+      if (isFinished(stageMap(stages).get(pot.stage)) && (layers?.length || finishedPhoto)) {
+        const glazeIds = (await db.glazes.toArray()).map((g) => g.id);
+        pot = applyFinish(pot, stages, { layers: layers?.length ? layers : undefined, photo: finishedPhoto || undefined }, glazeIds);
+      }
+      const id = await db.pots.add(pot);
+      const saved = await db.pots.get(id);
+      const lost = (blob, got) => blob && (!got || got.size !== blob.size);
+      if (!saved || lost(pot.photo, saved.photo) || lost(pot.finishedPhoto, saved.finishedPhoto)) {
+        throw new Error('pot did not read back');
+      }
+      return saved;
+    }),
+  );
 }
 
 /**
@@ -266,9 +299,89 @@ export function showStage(id) {
   return write(() => db.stages.update(id, { hidden: false, edited: true }));
 }
 
-export function addExamples() {
-  return write(async () => {
-    const stages = await db.stages.toArray();
-    await db.pots.bulkAdd(examplePots(stages));
-  });
+/** Puts a glaze on the shelf and resolves it; a name already there (any case) resolves the existing one. */
+export function addGlaze(name) {
+  return write(() =>
+    db.transaction('rw', db.glazes, async () => {
+      const clean = cleanGlazeName(name);
+      const same = findGlaze(await db.glazes.toArray(), clean);
+      if (same) return same;
+      return { id: await db.glazes.add({ name: clean }), name: clean };
+    }),
+  );
+}
+
+/** Renames a shelf glaze; every pot that uses it shows the new name, because pots keep only its id. */
+export function renameGlaze(id, name) {
+  return write(() =>
+    db.transaction('rw', db.glazes, async () => {
+      const clean = cleanGlazeName(name);
+      if (findGlaze(await db.glazes.toArray(), clean, id)) throw new InputError('Another glaze on your shelf already has that name.');
+      if (!(await db.glazes.update(id, { name: clean }))) throw new InputError('That glaze is no longer on your shelf.');
+    }),
+  );
+}
+
+/** Takes a glaze off the shelf. A glaze still used by a pot stays, so no pot loses its glaze name. */
+export function removeGlaze(id) {
+  return write(() =>
+    db.transaction('rw', db.pots, db.glazes, async () => {
+      const using = (await db.pots.toArray()).filter((p) => usesGlaze(p, id)).length;
+      if (using) {
+        throw new InputError(`This glaze is on ${using === 1 ? '1 pot' : `${using} pots`}. Take it off ${using === 1 ? 'that pot' : 'those pots'} first.`);
+      }
+      await db.glazes.delete(id);
+    }),
+  );
+}
+
+/** Replaces a pot's glaze layers (stored order, first coat first). */
+export function setGlazeLayers(potId, layers) {
+  return write(() =>
+    db.transaction('rw', db.pots, db.stages, db.glazes, async () => {
+      const pot = await db.pots.get(potId);
+      if (!pot) throw new InputError('This pot is no longer here.');
+      const stages = await db.stages.toArray();
+      const glazeIds = (await db.glazes.toArray()).map((g) => g.id);
+      await db.pots.put(applyGlazes(pot, stages, layers, glazeIds));
+    }),
+  );
+}
+
+/**
+ * Saves a finished pot's glaze layers and finished photo choice in one transaction:
+ * both are written or neither. `photo`: a new { blob }, { initial: true } or
+ * { entryId } to use a photo the pot already has, null to remove it, or leave it
+ * out to keep it.
+ */
+export function finishPot(potId, { layers, photo }) {
+  return write(() =>
+    db.transaction('rw', db.pots, db.stages, db.glazes, async () => {
+      const pot = await db.pots.get(potId);
+      if (!pot) throw new InputError('This pot is no longer here.');
+      const stages = await db.stages.toArray();
+      const glazeIds = (await db.glazes.toArray()).map((g) => g.id);
+      await db.pots.put(applyFinish(pot, stages, { layers, photo }, glazeIds));
+    }),
+  );
+}
+
+const EXAMPLE_COLORS = ['#6fa3a0', '#7a4a2b', '#c9b99a', '#3f6fa5', '#6c8a4b', '#b5683c'];
+
+export async function addExamples() {
+  // Pictures are drawn first: a Dexie transaction cannot wait on the canvas.
+  const photos = {};
+  for (const [i, name] of examplePhotoNames().entries()) photos[name] = await makeSwatchPhoto(EXAMPLE_COLORS[i % EXAMPLE_COLORS.length]);
+  return write(() =>
+    db.transaction('rw', db.pots, db.stages, db.glazes, async () => {
+      const stages = await db.stages.toArray();
+      const shelf = await db.glazes.toArray();
+      const glazeIds = {};
+      for (const name of EXAMPLE_GLAZES) {
+        const same = findGlaze(shelf, name);
+        glazeIds[name] = same ? same.id : await db.glazes.add({ name });
+      }
+      await db.pots.bulkAdd(examplePots(stages, Date.now(), { glazeIds, photos }));
+    }),
+  );
 }

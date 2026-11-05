@@ -28,3 +28,33 @@ export async function makeSamplePhoto() {
   canvas.height = 0;
   return new File([blob], 'sample-pot.jpg', { type: 'image/jpeg' });
 }
+
+// A small finished-pot picture (a glazed pot shape in the given colour), for the
+// example pots. Cheap to draw: 480 px, not a camera-sized canvas.
+export async function makeSwatchPhoto(color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 480;
+  canvas.height = 480;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#e9dcc6';
+  ctx.fillRect(0, 0, 480, 480);
+  ctx.fillStyle = 'rgba(43, 33, 27, .15)';
+  ctx.beginPath();
+  ctx.ellipse(240, 410, 150, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(240, 290, 150, 120, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(195, 90, 90, 80);
+  ctx.fillStyle = 'rgba(0, 0, 0, .35)';
+  ctx.beginPath();
+  ctx.ellipse(240, 90, 45, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const blob = await new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('no sample'))), 'image/jpeg', 0.85),
+  );
+  canvas.width = 0;
+  canvas.height = 0;
+  return blob;
+}
