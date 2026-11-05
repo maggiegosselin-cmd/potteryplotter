@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { STAGES } from '../src/lib/stages.js';
 import {
   DAY, agoLabel, applyStage, archivePot, buildPot, canArchive, countByStage, daysInStage, editEntry, endStages, examplePots,
-  fromDateInput, isArchived, migratePot, nextStageId, pathStages, progressOf, restorePot, sortNewestFirst, toDateInput, undoEntry,
+  fromDateInput, groupByStage, isArchived, leadOrder, migratePot, nextStageId, pathStages, progressOf, restorePot, sortNewestFirst, toDateInput, undoEntry,
 } from '../src/lib/pots.js';
 import { swipeThreshold } from '../src/lib/swipe.js';
 
@@ -158,4 +158,50 @@ test('dates round-trip through the date input form', () => {
 test('a swipe needs a wide drag', () => {
   assert.equal(swipeThreshold(200), 110);
   assert.ok(swipeThreshold(600) > 200);
+});
+
+const potAt = (id, stage, days, extra = {}) => ({
+  ...buildPot({ stage: 'formed', now: NOW, stages: STAGES }),
+  id, name: `Pot ${id}`, stage, stageSince: NOW - days * DAY, createdAt: NOW - id * DAY, ...extra,
+});
+
+test('shelf walk: sections follow the path from lump to finished, then waiting, then end states', () => {
+  const pots = [
+    potAt(1, 'given', 2), potAt(2, 'finished', 1), potAt(3, 'waiting_staff', 4), potAt(4, 'lump', 1),
+    potAt(5, 'failed', 3), potAt(6, 'glazed', 5), potAt(7, 'flawed', 1),
+  ];
+  const groups = groupByStage(pots, STAGES, NOW);
+  assert.deepEqual(groups.map((g) => g.id), ['lump', 'glazed', 'finished', 'waiting_staff', 'flawed', 'failed', 'given']);
+  assert.deepEqual(groups.map((g) => g.id), leadOrder(STAGES).map((s) => s.id).filter((id) => groups.some((g) => g.id === id)));
+});
+
+test('shelf walk: longest-waiting first inside a group, with the count and longest wait', () => {
+  const pots = [potAt(1, 'glazed', 3), potAt(2, 'glazed', 15), potAt(3, 'glazed', 7)];
+  const [group] = groupByStage(pots, STAGES, NOW);
+  assert.deepEqual(group.pots.map((p) => p.id), [2, 3, 1]);
+  assert.equal(group.count, 3);
+  assert.equal(group.longestDays, 15);
+});
+
+test('shelf walk: equal dates fall back to date added, and a missing date sorts last', () => {
+  const pots = [potAt(3, 'formed', 2), potAt(1, 'formed', 2), potAt(2, 'formed', 2, { stageSince: undefined }), potAt(4, 'formed', 2)];
+  const [group] = groupByStage(pots, STAGES, NOW);
+  // added later = bigger id = older createdAt first
+  assert.deepEqual(group.pots.map((p) => p.id), [4, 3, 1, 2]);
+  assert.equal(groupByStage([potAt(9, 'formed', 0, { stageSince: undefined })], STAGES, NOW)[0].longestDays, null);
+});
+
+test('shelf walk: archived pots stay out, empty sections are hidden, unknown stages come last', () => {
+  const pots = [potAt(1, 'finished', 3, { archivedAt: NOW }), potAt(2, 'bone_dry', 1), potAt(3, 'mystery', 1)];
+  const groups = groupByStage(pots, STAGES, NOW);
+  assert.deepEqual(groups.map((g) => g.id), ['bone_dry', '']);
+  assert.ok(groups.every((g) => g.pots.every((p) => !isArchived(p))));
+});
+
+test('shelf walk: the example pots group without losing any active pot', () => {
+  const pots = examplePots(STAGES, NOW).map((p, i) => ({ ...p, id: i + 1 }));
+  const groups = groupByStage(pots, STAGES, NOW);
+  assert.equal(groups.reduce((n, g) => n + g.count, 0), pots.filter((p) => !isArchived(p)).length);
+  assert.equal(groups.at(-1).id, 'reclaimed');
+  assert.equal(groups.find((g) => g.id === 'glazed').pots[0].name, 'Spoon rest');
 });
