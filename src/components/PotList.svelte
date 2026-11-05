@@ -10,7 +10,7 @@
   import InstallHelp from './InstallHelp.svelte';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, notice = '', onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished } = $props();
+  let { stages, notice = '', coach = null, onguide, onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished } = $props();
 
   const ARCHIVE = 'archive'; // the filter that opens the archive; no stage has this id
 
@@ -139,7 +139,7 @@
 
   <button class="btn secondary small" onclick={onstages}>My stages</button>
 
-  <InstallHelp />
+  <InstallHelp {onguide} />
 
   {#if pots === null}
     <p class="empty">Loading…</p>
@@ -185,6 +185,7 @@
                 class="card"
                 class:selected={selected.has(pot.id)}
                 class:done={isDone(stage)}
+                class:coach-ring={coach === 'next' && pot.id === shown[0]?.id}
                 role="button"
                 tabindex="0"
                 aria-label="{pot.name || `Pot ${pot.id}`}, {stage?.label}, {daysLabel(daysInStage(pot))}"
@@ -249,6 +250,6 @@
   </div>
 {:else}
   <div class="fab-bar">
-    <button class="btn" onclick={onadd}>＋ Add a pot</button>
+    <button class="btn" class:coach-ring={coach === 'add'} onclick={onadd}>＋ Add a pot</button>
   </div>
 {/if}

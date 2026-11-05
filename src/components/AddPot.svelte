@@ -7,8 +7,10 @@
   import { earlierStages, fromDateInput, isFinished, pathStages, startStages, toDateInput } from '../lib/pots.js';
   import { stackToLayers } from '../lib/glazes.js';
   import GlazePicker from './GlazePicker.svelte';
+  import FirstPotCoach from './FirstPotCoach.svelte';
+  import { WARNING } from '../content/guide.js';
 
-  let { stages, glazes, onsaved, oncancel } = $props();
+  let { stages, glazes, coach = null, browserTab = false, onsaved, oncancel } = $props();
 
   // New pots start at Formed unless the potter has hidden it.
   function startStage(rows) {
@@ -157,6 +159,10 @@
     <input class="hidden-input" type="file" accept="image/*" capture="environment" bind:this={finishedCameraInput} onchange={pickedFinished} tabindex="-1" aria-hidden="true" />
     <input class="hidden-input" type="file" accept="image/*" bind:this={finishedLibraryInput} onchange={pickedFinished} tabindex="-1" aria-hidden="true" />
 
+    {#if browserTab}
+      <div class="banner note" role="status">{WARNING.banner}</div>
+    {/if}
+    <FirstPotCoach step={coach} />
     {#if error}
       <div class="banner error" role="alert">{error}</div>
     {/if}
@@ -195,7 +201,7 @@
       <img class="preview" src={previewUrl} alt="Your pot" />
       <button class="btn secondary small" onclick={removePhoto}>Remove photo</button>
     {:else}
-      <button class="btn secondary" onclick={() => cameraInput.click()}>📷 Add a photo (optional)</button>
+      <button class="btn secondary" class:coach-ring={coach === 'photo'} onclick={() => cameraInput.click()}>📷 Add a photo (optional)</button>
       <button class="btn secondary small" onclick={() => libraryInput.click()}>Choose from photos</button>
       <button class="link" onclick={useSample}>No camera? Use a test photo</button>
     {/if}

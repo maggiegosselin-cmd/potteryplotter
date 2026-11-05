@@ -1,38 +1,25 @@
 <script>
-  import { installPrompt, installed, isIos } from '../lib/install.js';
+  import { installPrompt, installed, currentPlatform, promptInstall } from '../lib/install.js';
+  import { HELP, UI } from '../content/guide.js';
 
-  const ios = isIos();
+  // `onguide` opens the card-by-card guide (InstallGuide.svelte).
+  let { onguide } = $props();
 
-  async function install() {
-    const event = $installPrompt;
-    if (!event) return;
-    event.prompt();
-    await event.userChoice;
-    installPrompt.set(null);
-  }
+  const platform = currentPlatform();
+  const help = HELP[platform];
 </script>
 
 {#if !$installed}
   {#if $installPrompt}
     <div class="banner">
       <strong>Put Pot Log on your home screen</strong>
-      <button class="btn small" style="margin-top:10px" onclick={install}>Install</button>
-    </div>
-  {:else if ios}
-    <div class="banner">
-      <strong>Install on iPhone first</strong>
-      <ol>
-        <li>Open this page in Safari.</li>
-        <li>Tap the Share button.</li>
-        <li>Tap <em>Add to Home Screen</em>, then <em>Add</em>.</li>
-        <li>Open Pot Log from your home screen.</li>
-      </ol>
-      <p style="margin:8px 0 0">Pots saved in Safari don't move to the home-screen app, so install before logging pots.</p>
+      <button class="btn small" style="margin-top:10px" onclick={promptInstall}>Install</button>
     </div>
   {:else}
     <div class="banner">
-      <strong>Install on Android</strong>
-      <p style="margin:6px 0 0">In Chrome, open the ⋮ menu and tap <em>Install app</em> (or <em>Add to Home screen</em>).</p>
+      <strong>{help.title}</strong>
+      <p style="margin:6px 0 0">{help.text}</p>
+      <button class="btn small" style="margin-top:10px" onclick={onguide}>{UI.help}</button>
     </div>
   {/if}
 {/if}

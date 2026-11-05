@@ -7,6 +7,7 @@ import {
 } from './pots.js';
 import { InputError, cleanGlazeName, findGlaze, usesGlaze } from './glazes.js';
 import { makeSwatchPhoto } from './samplePhoto.js';
+import { FIRST_POT } from './firstPot.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
 // photo as a Blob, so the record and its photo are written in one transaction.
@@ -19,6 +20,8 @@ import { makeSwatchPhoto } from './samplePhoto.js';
 // gives each pot `glazeLayers` (glaze ids with coverage and method) and a
 // `finishedPhoto` Blob, both in the pot's own row. Pots keep their stage.
 // Version 5 adds `edited`, `hidden` and `role` to the stage rows (see below).
+// Version 6 adds the small `flags` table (key). It holds one row, `firstPot`, that
+// leads the first-open coach until the first pot is saved; no pot or stage changes.
 export const db = new Dexie('pot-log');
 
 db.version(1).stores({
@@ -76,8 +79,23 @@ db.version(5)
     }),
   );
 
-// A brand-new install never runs the upgrade, so it gets the stages here.
-db.on('populate', (tx) => tx.table('stages').bulkAdd(STAGES));
+// Version 6 adds the `flags` table. A phone that already holds pots is left alone;
+// one with none yet gets the first-open coach too.
+db.version(6)
+  .stores({
+    pots: '++id, createdAt, stage, stageSince',
+    stages: 'id, order',
+    glazes: '++id, name',
+    flags: 'key',
+  })
+  .upgrade(async (tx) => {
+    if ((await tx.table('pots').count()) === 0) await tx.table('flags').put({ key: FIRST_POT, since: Date.now() });
+  });
+
+// A brand-new install never runs the upgrade, so it gets the stages and the first-open flag here.
+db.on('populate', (tx) =>
+  tx.table('stages').bulkAdd(STAGES).then(() => tx.table('flags').put({ key: FIRST_POT, since: Date.now() })),
+);
 
 export class StorageError extends Error {
   /** kind: 'quota' | 'unavailable' | 'unverified' | 'unknown' */
@@ -274,6 +292,11 @@ export function moveStage(id, dir) {
       }
     }),
   );
+}
+
+/** Ends the first-open coach. Safe to call again; it never touches a pot. */
+export function clearFirstPot() {
+  return write(() => db.flags.delete(FIRST_POT));
 }
 
 export const countPotsAt = (stageId) => db.pots.where('stage').equals(stageId).count();
