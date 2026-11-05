@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
-import { STAGES } from './stages.js';
+import { STAGES, upgradeStage } from './stages.js';
+import { addedStage, editedStage, orderAfter, reorder } from './stageEdit.js';
 import { applyStage, archivePot, buildPot, editEntry, examplePots, migratePot, restorePot, undoEntry } from './pots.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
@@ -38,6 +39,19 @@ db.version(3)
       Object.assign(pot, migratePot(pot));
     });
   });
+
+// Version 4 gives each stage row `edited`, `hidden` and `role`. Only rows the
+// potter has not edited are rewritten; pots are not touched.
+db.version(4)
+  .stores({
+    pots: '++id, createdAt, stage, stageSince',
+    stages: 'id, order',
+  })
+  .upgrade((tx) =>
+    tx.table('stages').toCollection().modify((row) => {
+      if (!row.edited) Object.assign(row, upgradeStage(row));
+    }),
+  );
 
 // A brand-new install never runs the upgrade, so it gets the stages here.
 db.on('populate', (tx) => tx.table('stages').bulkAdd(STAGES));
@@ -194,6 +208,62 @@ export function updateEntry(potId, entryId, patch) {
       if (pot) await db.pots.put(editEntry(pot, entryId, patch));
     }),
   );
+}
+
+/** Renames or retags one stage. Its id never changes, so pots and history keep pointing at it. */
+export function saveStage(id, patch) {
+  return write(() =>
+    db.transaction('rw', db.stages, async () => {
+      const row = await db.stages.get(id);
+      if (row) await db.stages.put(editedStage(row, patch));
+    }),
+  );
+}
+
+/** Adds a stage right after another one in the list. Resolves the new row. */
+export function addStage(afterId, fields) {
+  return write(() =>
+    db.transaction('rw', db.stages, async () => {
+      const order = orderAfter(await db.stages.toArray(), afterId);
+      const row = addedStage({ ...fields, order });
+      await db.stages.add(row);
+      return row;
+    }),
+  );
+}
+
+/** Moves a stage one place earlier (-1) or later (1) by swapping order with its neighbour. */
+export function moveStage(id, dir) {
+  return write(() =>
+    db.transaction('rw', db.stages, async () => {
+      for (const c of reorder(await db.stages.toArray(), id, dir)) {
+        await db.stages.update(c.id, { order: c.order, edited: true });
+      }
+    }),
+  );
+}
+
+export const countPotsAt = (stageId) => db.pots.where('stage').equals(stageId).count();
+
+/**
+ * Hides a stage (never deletes it). With `moveTo`, the pots sitting in it move
+ * on to that stage, each with a history entry, in the same transaction.
+ * Resolves how many pots moved.
+ */
+export function hideStage(id, moveTo = null) {
+  return write(() =>
+    db.transaction('rw', db.stages, db.pots, async () => {
+      await db.stages.update(id, { hidden: true, edited: true });
+      if (!moveTo) return 0;
+      const pots = await db.pots.where('stage').equals(id).toArray();
+      for (const pot of pots) await db.pots.put(applyStage(pot, moveTo));
+      return pots.length;
+    }),
+  );
+}
+
+export function showStage(id) {
+  return write(() => db.stages.update(id, { hidden: false, edited: true }));
 }
 
 export function addExamples() {

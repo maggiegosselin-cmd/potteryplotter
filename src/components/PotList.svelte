@@ -10,7 +10,7 @@
   import InstallHelp from './InstallHelp.svelte';
   import Silhouette from './Silhouette.svelte';
 
-  let { stages, notice = '', onadd, onopen, onmove, onarchive, onrestore } = $props();
+  let { stages, notice = '', onadd, onopen, onstages, onmove, onarchive, onrestore } = $props();
 
   const ARCHIVE = 'archive'; // the filter that opens the archive; no stage has this id
 
@@ -131,6 +131,8 @@
     </div>
   {/if}
 
+  <button class="btn secondary small" onclick={onstages}>My stages</button>
+
   <InstallHelp />
 
   {#if pots === null}
@@ -143,7 +145,7 @@
       <button class="chip" class:on={!filter} onclick={() => pick(null)}>All {active.length}</button>
       {#each chips as s (s.id)}
         <button class="chip" class:on={filter === s.id} onclick={() => pick(filter === s.id ? null : s.id)}>
-          {s.label} {counts.get(s.id)}
+          {s.label}{s.hidden ? ' (hidden)' : ''} {counts.get(s.id)}
         </button>
       {/each}
       <button class="chip archive" class:on={inArchive} onclick={() => pick(inArchive ? null : ARCHIVE)}>Archive {archived.length}</button>

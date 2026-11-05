@@ -4,6 +4,7 @@
   import {
     canArchive, coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, isArchived, nextStageId, progressOf, stageMap, toDateInput, DAY,
   } from '../lib/pots.js';
+  import { potNotes } from '../lib/stageEdit.js';
   import Silhouette from './Silhouette.svelte';
 
   let { stages, potId, onback, onmove, onarchive, onrestore, askPhoto } = $props();
@@ -44,6 +45,8 @@
 
   const next = $derived(pot ? nextStageId(pot, stages) : null);
   const stage = $derived(pot ? map.get(pot.stage) : null);
+  let notesDismissed = $state(false);
+  const notes = $derived(pot && !notesDismissed ? potNotes(pot, stages) : []);
 
   const shortDate = (t) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -82,6 +85,13 @@
         </div>
       </div>
 
+      {#if notes.length}
+        <div class="banner pot-note" role="status">
+          {#each notes as n}<div>{n}</div>{/each}
+          <button class="btn secondary small" onclick={() => (notesDismissed = true)}>OK, got it</button>
+        </div>
+      {/if}
+
       {#if next}
         <button class="btn big" onclick={() => onmove([{ pot, to: next }])}>
           Next: {map.get(next).label} →
@@ -103,7 +113,7 @@
 
       <h2>End it differently</h2>
       <div class="ends">
-        {#each endStages(stages) as end (end.id)}
+        {#each endStages(stages).filter((e) => !e.hidden) as end (end.id)}
           <button class="btn secondary" disabled={pot.stage === end.id} onclick={() => onmove([{ pot, to: end.id }])}>
             {end.label}
           </button>

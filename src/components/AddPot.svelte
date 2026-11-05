@@ -8,6 +8,12 @@
 
   let { stages, onsaved, oncancel } = $props();
 
+  // New pots start at Formed unless the potter has hidden it.
+  function startStage(rows) {
+    const open = pathStages(rows).filter((s) => !s.hidden);
+    return (open.find((s) => s.id === 'formed') || open[0])?.id;
+  }
+
   let cameraInput;
   let libraryInput;
   let step = $state('form'); // form | shrinking | saving
@@ -16,12 +22,12 @@
   let name = $state('');
   let clay = $state('');
   let notes = $state('');
-  let stage = $state('formed');
+  let stage = $state(startStage(stages));
   let when = $state(toDateInput(Date.now()));
   let earlier = $state({}); // earlier stage id -> yyyy-mm-dd, only the ones remembered
   let error = $state('');
 
-  const path = $derived(pathStages(stages));
+  const path = $derived(pathStages(stages).filter((s) => !s.hidden));
   const before = $derived(path.slice(0, Math.max(0, path.findIndex((s) => s.id === stage))));
 
   // The camera stays closed until the potter asks for it.

@@ -2,13 +2,16 @@
   import { liveQuery } from 'dexie';
   import { db, changeStages, undoChanges, updateEntry, archivePots, restorePots, explainStorageError } from './lib/db.js';
   import { newId, stageMap } from './lib/pots.js';
+  import { moveNotes } from './lib/stageEdit.js';
   import { shrinkPhoto } from './lib/shrink.js';
   import PotList from './components/PotList.svelte';
   import AddPot from './components/AddPot.svelte';
   import PotScreen from './components/PotScreen.svelte';
+  import StageList from './components/StageList.svelte';
 
   let stages = $state(null); // the stage rows from the database; null until read
   let adding = $state(false);
+  let editingStages = $state(false);
   let openId = $state(null);
   let notice = $state('');
   let toast = $state(null); // { text, error?, undo?, photo? }
@@ -67,8 +70,11 @@
       const done = await changeStages(changes);
       const label = map.get(items[0].to).label;
       const who = items.length === 1 ? items[0].pot.name || `Pot ${items[0].pot.id}` : `${done.length} pots`;
+      // Gentle note when a move skips a drying or glazing step; shown with the move and easy to dismiss.
+      const notes = items.length === 1 ? moveNotes(items[0].pot, items[0].to, stages) : [];
       show({
         text: `${who} → ${label}`,
+        note: notes.join(' '),
         photo: only?.photo === 'offer' ? target : null,
         undo: async () => {
           try {
@@ -124,10 +130,14 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} />
+  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onstages={() => (editingStages = true)} onmove={move} onarchive={archive} onrestore={restore} />
 
   {#if openId !== null}
     <PotScreen {stages} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} />
+  {/if}
+
+  {#if editingStages}
+    <StageList {stages} onback={() => (editingStages = false)} />
   {/if}
 
   {#if adding}
@@ -137,7 +147,7 @@
 
 {#if toast}
   <div class="toast" class:error={toast.error} role="status">
-    <span class="msg">{toast.text}</span>
+    <span class="msg">{toast.text}{#if toast.note}<span class="toast-note">{toast.note}</span>{/if}</span>
     {#if toast.photo}
       <button class="tbtn" onclick={() => askPhoto(toast.photo)}>📷 Add photo</button>
     {/if}
