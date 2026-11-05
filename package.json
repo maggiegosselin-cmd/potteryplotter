@@ -1,0 +1,12 @@
+{
+  "name": "pot-log",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline home-screen app for logging pots with a photo. Plain JavaScript, no build step.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/**/*.test.js\""
+  }
+}
