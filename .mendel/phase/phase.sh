@@ -2,9 +2,10 @@
 # /mendel/phase: reports the persistent stores this application has, and
 # implements the sandbox and production steps for them.
 #
-# This repository holds no application code and keeps no durable state: no
-# database, no persistent volume, no external store of record. So there is
-# nothing to find, nothing to connect to, and nothing to build a sandbox from.
+# This application keeps no durable state on any server: pots live in the
+# user's own browser (IndexedDB via Dexie), which no deployment can reach, and
+# the server only serves static files. So there is nothing to find, nothing to
+# connect to, and nothing to build a sandbox from.
 
 if [ "$#" -eq 1 ] && [ "$1" = "probe" ]; then
   printf '{"stores": []}\n'
