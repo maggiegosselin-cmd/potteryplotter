@@ -1,19 +1,21 @@
 # The files that, when changed, mean this file should be written again.
-# depends-on:
+# depends-on: server/store.js server/server.js Dockerfile
 
-# This application keeps no durable state on any server. Its pots live in the
-# user's own browser (IndexedDB, opened by Dexie in src/lib/db.js), which no
-# deployment can connect to, and Dexie upgrades that schema itself, in the
-# browser, from db.version(...). The only server process (server/server.js)
-# serves static files and reads just PORT. So there is no database to select,
-# no connection mechanism to copy, and no migration tooling to run here.
-# Nothing is read from the environment or from the repository's files; the
-# stages copy only .mendel/phase/phase.sh, which .dockerignore does not exclude.
+# The migrate stage applies db/migrations (dbmate) to the SQLite database the
+# application keeps. The database is chosen the way the application's own image
+# chooses it (see /Dockerfile and server/server.js): the DATABASE_PATH variable,
+# with the same default value the application image bakes in. Nothing else.
+FROM node:22-alpine AS migrate
+WORKDIR /app
+# dbmate is the migration tool (a single static binary).
+COPY --from=ghcr.io/amacneil/dbmate:2.37.0 /usr/local/bin/dbmate /usr/local/bin/dbmate
+# Copied from the repository's Dockerfile.
+ENV DATABASE_PATH=/data/potlog.db
+COPY db/migrations/ ./db/migrations/
+COPY .mendel/phase/migrate.js /mendel/migrate.js
+CMD ["node", "/mendel/migrate.js"]
 
-FROM alpine:3.24 AS migrate
-# Serves nothing: no port, no listener. Prints one line and exits 0.
-CMD ["echo", "This application has no persistent stores to migrate."]
-
+# Adds /mendel/phase, which reports and rehearses against the same database.
 FROM migrate AS adapter
-COPY .mendel/phase/phase.sh /mendel/phase
+COPY .mendel/phase/phase.js /mendel/phase
 RUN chmod 0755 /mendel/phase
