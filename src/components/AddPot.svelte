@@ -4,11 +4,17 @@
   import { shrinkPhoto } from '../lib/shrink.js';
   import { requestPersistence } from '../lib/persist.js';
   import { makeSamplePhoto } from '../lib/samplePhoto.js';
-  import { earlierStages, fromDateInput, isFinished, startStages, toDateInput } from '../lib/pots.js';
+  import { earlierStages, fromDateInput, isFinished, pathStages, startStages, toDateInput } from '../lib/pots.js';
   import { stackToLayers } from '../lib/glazes.js';
   import GlazePicker from './GlazePicker.svelte';
 
   let { stages, glazes, onsaved, oncancel } = $props();
+
+  // New pots start at Formed unless the potter has hidden it.
+  function startStage(rows) {
+    const open = pathStages(rows).filter((s) => !s.hidden);
+    return (open.find((s) => s.id === 'formed') || open[0])?.id;
+  }
 
   let cameraInput;
   let libraryInput;
@@ -20,7 +26,7 @@
   let name = $state('');
   let clay = $state('');
   let notes = $state('');
-  let stage = $state('formed');
+  let stage = $state(startStage(stages));
   let when = $state(toDateInput(Date.now()));
   let earlier = $state({}); // earlier stage id -> yyyy-mm-dd, only the ones remembered
   let error = $state('');
@@ -29,9 +35,10 @@
   let useSame = $state(false); // use the pot photo above as the finished photo
   let stack = $state([]); // glaze layers, top coat first
 
+  // Hidden stages are not offered for a new pot.
   const finishing = $derived(isFinished(stages.find((s) => s.id === stage)));
-  const options = $derived(startStages(stages));
-  const before = $derived(earlierStages(stage, stages));
+  const options = $derived(startStages(stages).filter((s) => !s.hidden));
+  const before = $derived(earlierStages(stage, stages).filter((s) => !s.hidden));
 
   // The camera stays closed until the potter asks for it.
   onMount(() => () => {

@@ -2,16 +2,19 @@
   import { liveQuery } from 'dexie';
   import { db, changeStages, undoChanges, updateEntry, archivePots, restorePots, explainStorageError } from './lib/db.js';
   import { isFinished, newId, stageMap } from './lib/pots.js';
+  import { moveNotes } from './lib/stageEdit.js';
   import { shrinkPhoto } from './lib/shrink.js';
   import PotList from './components/PotList.svelte';
   import AddPot from './components/AddPot.svelte';
   import PotScreen from './components/PotScreen.svelte';
+  import StageList from './components/StageList.svelte';
   import GlazeSheet from './components/GlazeSheet.svelte';
   import FinishedPots from './components/FinishedPots.svelte';
 
   let stages = $state(null); // the stage rows from the database; null until read
   let glazes = $state([]); // the potter's glaze shelf
   let adding = $state(false);
+  let editingStages = $state(false);
   let showFinished = $state(false);
   let sheetPotId = $state(null); // the pot whose glazes (and finished photo) are being recorded
   let openId = $state(null);
@@ -87,8 +90,11 @@
       // A pot that is finished (or finished with a flaw) is offered its glazes and finished photo at once.
       if (done.length && isFinished(only)) sheetPotId = changes[0].potId;
       const who = items.length === 1 ? items[0].pot.name || `Pot ${items[0].pot.id}` : `${done.length} pots`;
+      // Gentle note when a move skips a drying or glazing step; shown with the move and easy to dismiss.
+      const notes = items.length === 1 ? moveNotes(items[0].pot, items[0].to, stages) : [];
       show({
         text: `${who} → ${label}`,
+        note: notes.join(' '),
         photo: only?.photo === 'offer' ? target : null,
         glaze: only?.glaze === 'offer' ? changes[0].potId : null,
         undo: async () => {
@@ -146,7 +152,7 @@
 {#if stages === null}
   <main class="screen"><p class="empty">Loading…</p></main>
 {:else}
-  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onmove={move} onarchive={archive} onrestore={restore} onfinished={() => (showFinished = true)} />
+  <PotList {stages} {notice} onadd={() => { notice = ''; adding = true; }} onopen={(id) => (openId = id)} onstages={() => (editingStages = true)} onmove={move} onarchive={archive} onrestore={restore} onfinished={() => (showFinished = true)} />
 
   {#if showFinished}
     <FinishedPots {stages} {glazes} onopen={(id) => (openId = id)} onback={() => (showFinished = false)} />
@@ -154,6 +160,10 @@
 
   {#if openId !== null}
     <PotScreen {stages} {glazes} potId={openId} onback={() => (openId = null)} onmove={move} onarchive={archive} onrestore={restore} {askPhoto} onglazes={(id) => (sheetPotId = id)} />
+  {/if}
+
+  {#if editingStages}
+    <StageList {stages} onback={() => (editingStages = false)} />
   {/if}
 
   {#if adding}
@@ -167,7 +177,7 @@
 
 {#if toast}
   <div class="toast" class:error={toast.error} role="status">
-    <span class="msg">{toast.text}</span>
+    <span class="msg">{toast.text}{#if toast.note}<span class="toast-note">{toast.note}</span>{/if}</span>
     {#if toast.photo}
       <button class="tbtn" onclick={() => askPhoto(toast.photo)}>📷 Add photo</button>
     {/if}

@@ -138,11 +138,12 @@ export function nextStageId(pot, stages) {
   const map = stageMap(stages);
   const current = map.get(pot.stage);
   if (!current || isDone(current)) return null;
-  if (current.kind === 'path' && current.viaWaiting && map.has(WAITING_ID)) return WAITING_ID;
+  if (current.kind === 'path' && current.viaWaiting && map.has(WAITING_ID) && !map.get(WAITING_ID).hidden) return WAITING_ID;
   const path = pathStages(stages);
   const from = current.kind === 'waiting' ? lastPathStageId(pot, stages) : current.id;
   const at = path.findIndex((s) => s.id === from);
-  return at >= 0 && at < path.length - 1 ? path[at + 1].id : null;
+  // Hidden stages are skipped over; a pot already sitting in one can still move on.
+  return at >= 0 ? path.slice(at + 1).find((s) => !s.hidden)?.id ?? null : null;
 }
 
 /** Moves a pot to a stage, adding its history entry. Returns the new pot. */

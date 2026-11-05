@@ -14,4 +14,6 @@ Offline-first pottery log: install to the home screen, log a pot (photo optional
 - Workbox (via `vite-plugin-pwa`) generates the service worker and precache list; `navigator.storage.persist()` is requested after a save.
 - `server/server.js` serves `dist/` on `PORT` (default 8080) and logs one JSON line per request.
 
+- The potter's own stages: **My stages** opens one ordered list with large earlier/later buttons; tapping a name opens a full-screen sheet (name, kind, photo offer, role tag, hide) and each row has "Add after" with firing suggestions (raku, soda, wood, pit, off-studio). Stages are never deleted: hiding keeps the row so pots sitting there keep their label, and can move them on. Pots refer to stages only by id, so renames, reorders and hides keep every pot's history. Dexie version 4 adds `edited`, `hidden` and `role` to stage rows and rewrites only unedited rows. Gentle, dismissible order notes (drying before the first firing, glazing before a later firing) read the role tags and show after an edit, with a move that skips a step, and on the pot (`src/lib/stageEdit.js`, `src/components/StageList.svelte`, `StageSheet.svelte`).
+
 Run `python3 scripts/make-icons.py` to regenerate the icons. Tests: `npm test`.
