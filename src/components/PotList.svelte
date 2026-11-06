@@ -5,11 +5,12 @@
   import { swipe } from '../lib/swipe.js';
   import {
     agoLabel, canArchive, coverPhoto, countByStage, daysInStage, daysLabel, groupByStage, isArchived, isDone, nextStageId, progressOf,
-    sortNewestFirst, stageMap,
+    potForm, sortNewestFirst, stageMap,
   } from '../lib/pots.js';
   import InstallHelp from './InstallHelp.svelte';
   import CopyStatus from './CopyStatus.svelte';
   import Silhouette from './Silhouette.svelte';
+  import Illustration from './Illustration.svelte';
 
   let { stages, notice = '', coach = null, onguide, onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished, onexport } = $props();
 
@@ -123,6 +124,7 @@
 
 
 <main class="screen" class:selecting>
+  <Illustration />
   <h1>My pots</h1>
   <p class="sub">Grouped by stage, longest-waiting first. Swipe a card to move it on; press and hold to pick several.</p>
 
@@ -147,7 +149,7 @@
   {#if pots === null}
     <p class="empty">Loading…</p>
   {:else if pots.length === 0 && !loadError}
-    <p class="empty">No pots yet. Tap the big button to log your first one.</p>
+    <p class="empty"><Illustration width={200} />No pots yet. Tap the big button to log your first one.</p>
     <button class="link center" onclick={() => addExamples()}>Or try it with some example pots</button>
   {:else}
     <button class="btn secondary small finished-link" onclick={onfinished}>🖼 Finished pots</button>
@@ -164,6 +166,7 @@
 
     {#if shown.length === 0}
       <p class="empty">
+        <Illustration width={120} />
         {inArchive ? 'Nothing in the archive. Pots that have ended can be moved here to tidy the list.' : 'Every pot is in the archive.'}
       </p>
     {/if}
@@ -207,7 +210,7 @@
                   {#if pot.url}
                     <img src={pot.url} alt="" loading="lazy" draggable="false" />
                   {:else}
-                    <Silhouette progress={1} size={64} muted />
+                    <Silhouette progress={1} size={64} muted form={potForm(pot)} />
                   {/if}
                   {#if selecting}<span class="tick">{selected.has(pot.id) ? '✓' : ''}</span>{/if}
                 </div>
@@ -224,7 +227,7 @@
                     >Move to archive</button>
                   {/if}
                 </div>
-                <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} />
+                <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} form={potForm(pot)} />
               </div>
             </li>
           {/each}

@@ -9,6 +9,9 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
 // worker from the files Vite emits, so the app shell loads with no signal.
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(version) },
+  // Every image and font becomes a file in the build, so the precache list holds it
+  // (small files would otherwise be inlined and the owner's drawing could skip the cache).
+  build: { assetsInlineLimit: 0 },
   plugins: [
     svelte(),
     VitePWA({
@@ -23,8 +26,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f4e6d0',
-        theme_color: '#b5583a',
+        background_color: '#f5e8d1',
+        theme_color: '#44596a',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -32,7 +35,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,webp,svg,woff2,webmanifest}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,

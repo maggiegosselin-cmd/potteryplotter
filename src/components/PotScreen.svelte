@@ -2,7 +2,7 @@
   import { liveQuery } from 'dexie';
   import { db, editPot, updateEntry } from '../lib/db.js';
   import {
-    canArchive, canGlaze, coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, isArchived, isFinished, nextStageId, progressOf,
+    canArchive, canGlaze, coverPhoto, currentEntry, daysInStage, daysLabel, endStages, fromDateInput, isArchived, isFinished, nextStageId, potForm, progressOf,
     stageMap, toDateInput, DAY,
   } from '../lib/pots.js';
   import { potNotes } from '../lib/stageEdit.js';
@@ -77,12 +77,12 @@
         {#if url}
           <img src={url} alt={pot.name || 'Pot photo'} />
         {:else}
-          <Silhouette progress={1} size={96} muted />
+          <Silhouette progress={1} size={96} muted form={potForm(pot)} />
         {/if}
       </div>
 
       <div class="status">
-        <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} size={48} />
+        <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} size={48} form={potForm(pot)} />
         <div>
           <div class="stage-now">{stage?.label}</div>
           <div class="when">{daysLabel(daysInStage(pot))} in this stage</div>

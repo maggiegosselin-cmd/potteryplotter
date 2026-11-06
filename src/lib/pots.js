@@ -247,6 +247,20 @@ export function progressOf(pot, stages) {
   return at < 0 || path.length < 2 ? 0 : at / (path.length - 1);
 }
 
+/** The shapes a pot's silhouette can take. Silhouette.svelte draws one per entry. */
+export const POT_FORMS = ['bowl', 'mug'];
+
+// "mug", "mugs", "teacup", "egg cup": the word ends in mug or cup, so "cupboard" is left alone.
+const MUG_WORDS = /\b\w*(?:mug|cup)s?\b/i;
+
+/**
+ * Which silhouette a pot gets, worked out from its name and notes (nothing is stored):
+ * 'mug' when either mentions a mug or a cup, otherwise 'bowl'.
+ */
+export function potForm(pot) {
+  return MUG_WORDS.test(`${pot?.name || ''} ${pot?.notes || ''}`) ? 'mug' : 'bowl';
+}
+
 /** The finished photo, else the newest photo in the history, else the one taken when the pot was added. */
 export function coverPhoto(pot) {
   if (pot.finishedPhoto) return pot.finishedPhoto;

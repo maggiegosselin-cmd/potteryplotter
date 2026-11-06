@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { STAGES } from '../src/lib/stages.js';
 import {
   DAY, agoLabel, applyStage, archivePot, buildPot, canArchive, countByStage, daysInStage, editEntry, endStages, examplePots,
-  fromDateInput, groupByStage, isArchived, leadOrder, migratePot, nextStageId, pathStages, progressOf, restorePot, sortNewestFirst, toDateInput, undoEntry,
+  fromDateInput, groupByStage, isArchived, leadOrder, migratePot, nextStageId, pathStages, potForm, progressOf, restorePot, sortNewestFirst, toDateInput, undoEntry,
 } from '../src/lib/pots.js';
 import { swipeThreshold } from '../src/lib/swipe.js';
 
@@ -204,4 +204,24 @@ test('shelf walk: the example pots group without losing any active pot', () => {
   assert.equal(groups.reduce((n, g) => n + g.count, 0), pots.filter((p) => !isArchived(p)).length);
   assert.equal(groups.at(-1).id, 'reclaimed');
   assert.equal(groups.find((g) => g.id === 'glazed').pots[0].name, 'Spoon rest');
+});
+
+test('a pot named or noted as a mug or cup gets the mug silhouette; everything else is a bowl', () => {
+  assert.equal(potForm({ name: 'Tall mug' }), 'mug');
+  assert.equal(potForm({ name: 'Mug set' }), 'mug');
+  assert.equal(potForm({ name: 'Egg cup' }), 'mug');
+  assert.equal(potForm({ name: 'Teacup' }), 'mug');
+  assert.equal(potForm({ name: 'Cups x4' }), 'mug');
+  assert.equal(potForm({ name: 'Untitled', notes: 'A coffee cup for Sam' }), 'mug');
+  assert.equal(potForm({ name: 'Pinch bowl' }), 'bowl');
+  assert.equal(potForm({ name: 'Tall vase', notes: 'cupboard shelf' }), 'bowl');
+  assert.equal(potForm({ name: '' }), 'bowl');
+  assert.equal(potForm({}), 'bowl');
+});
+
+test('the example pots include both silhouette forms and the form is not stored on the pot', () => {
+  const pots = examplePots(STAGES, NOW);
+  const forms = new Set(pots.map(potForm));
+  assert.deepEqual([...forms].sort(), ['bowl', 'mug']);
+  assert.equal(pots.some((p) => 'form' in p), false);
 });
