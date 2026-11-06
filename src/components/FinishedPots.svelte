@@ -4,6 +4,7 @@
   import { finishGaps, finishedPots, isIncomplete, potsWithGlaze, stageMap } from '../lib/pots.js';
   import { layersToStack, nameLookup } from '../lib/glazes.js';
   import Silhouette from './Silhouette.svelte';
+  import Illustration from './Illustration.svelte';
 
   // Finished pots (Finished, and Finished with a flaw) as a two-column photo grid
   // with glaze captions. Pots missing a finished photo or a glaze come first and
@@ -61,6 +62,7 @@
     {#if pots === null}
       <p class="empty">Loading…</p>
     {:else if finished.length === 0}
+      <Illustration variant="small" />
       <p class="empty">No finished pots yet. When a pot is finished, its photo and glazes show up here.</p>
     {:else}
       <p class="sub">
@@ -87,7 +89,7 @@
                 {#if pot.url}
                   <img src={pot.url} alt="Finished {title(pot)}" loading="lazy" />
                 {:else}
-                  <Silhouette progress={1} size={72} muted />
+                  <Silhouette potId={pot.id} progress={1} size={72} muted />
                   <span class="flag">No finished photo</span>
                 {/if}
               </span>

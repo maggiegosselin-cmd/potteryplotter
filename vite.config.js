@@ -23,8 +23,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f4e6d0',
-        theme_color: '#b5583a',
+        background_color: '#f3e9d6',
+        theme_color: '#a9bdc7',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -32,7 +32,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
+        // woff2 is the bundled EB Garamond. The owner's illustration, public/art/pots.png, is a png, so it is
+        // precached too when the file is there; the size cap is raised for a large drawing.
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,

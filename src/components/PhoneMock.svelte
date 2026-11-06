@@ -74,12 +74,12 @@
   .row { display: flex; justify-content: space-between; align-items: center; min-height: 40px; padding: 4px 12px; border-radius: 10px; }
   .field { margin: 0 4px 10px; padding: 8px 12px; border-radius: 10px; background: #f1ebe2; }
   .buttons { display: flex; justify-content: space-between; gap: 8px; }
-  .dbtn { flex: 1; padding: 8px; border-radius: 10px; text-align: center; font-weight: 700; color: var(--clay-dark); }
-  .home { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-content: start; padding: 24px 8px; background: linear-gradient(#d99a7d, #b5583a); }
-  .app { display: grid; justify-items: center; gap: 4px; padding: 4px; border-radius: 14px; color: #fff; font-size: .7rem; }
+  .dbtn { flex: 1; padding: 8px; border-radius: 10px; text-align: center; font-weight: 700; color: var(--accent-ink); }
+  .home { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-content: start; padding: 24px 8px; background: linear-gradient(var(--sand), var(--blue-grey)); }
+  .app { display: grid; justify-items: center; gap: 4px; padding: 4px; border-radius: 14px; color: var(--ink); font-size: .7rem; }
   .app-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #fff; font-size: 1.5rem; }
-  .hl { background: #ffd9a8; color: var(--ink); box-shadow: 0 0 0 4px var(--clay); animation: pulse 1.6s ease-in-out infinite; }
-  .app.hl { background: transparent; color: #fff; box-shadow: 0 0 0 4px #fff; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(181, 88, 58, .45); } }
+  .hl { background: #ffd9a8; color: var(--ink); box-shadow: 0 0 0 4px var(--blue-grey-deep); animation: pulse 1.6s ease-in-out infinite; }
+  .app.hl { background: transparent; color: var(--ink); box-shadow: 0 0 0 4px var(--ink); }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(76, 101, 115, .45); } }
   @media (prefers-reduced-motion: reduce) { .hl { animation: none; } }
 </style>
