@@ -7,6 +7,7 @@
 // the records name them by that id. Glaze layers keep their stored order (first coat
 // first, top coat last); the page's "A over B" line is read from the same layers.
 import { glazeLine, layerDetail, layersToStack, nameLookup } from './glazes.js';
+import { clayLine } from './weight.js';
 import { isArchived, isFinished, sortNewestFirst, stageMap, toDateInput } from './pots.js';
 
 export const FORMAT = 'pot-log-export';
@@ -73,6 +74,7 @@ export function buildRecords({ pots, glazes, stages, exportedAt = Date.now(), ap
       id: pot.id,
       name: pot.name || '',
       clay: pot.clay || '',
+      weight: pot.weight || null,
       notes: pot.notes || '',
       createdAt: iso(pot.createdAt),
       stage: pot.stage,
@@ -247,7 +249,7 @@ export async function renderExport(data, blobs, stages, { onprogress = () => {} 
       rec.archived ? `<span class="badge archived">Archived ${esc(day(Date.parse(rec.archivedAt)))}</span>` : '',
       '</h3>',
       `<p class="meta">${esc(rec.stageLabel)}${rec.stageSince ? ` since ${esc(day(Date.parse(rec.stageSince)))}` : ''}`,
-      ` · added ${esc(day(Date.parse(rec.createdAt)))}${rec.clay ? ` · ${esc(rec.clay)}` : ''}</p>`,
+      ` · added ${esc(day(Date.parse(rec.createdAt)))}${clayLine(rec) ? ` · ${esc(clayLine(rec))}` : ''}</p>`,
     );
     if (rec.notes) parts.push(`<p class="note">${esc(rec.notes)}</p>`);
     if (rec.glazeLayers.length) {

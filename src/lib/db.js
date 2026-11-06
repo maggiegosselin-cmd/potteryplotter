@@ -10,6 +10,7 @@ import { makeSwatchPhoto } from './samplePhoto.js';
 import { FIRST_POT } from './firstPot.js';
 import { newUuid, stamp } from './wire.js';
 import { ExportError } from './exportData.js';
+import { parseWeight } from './weight.js';
 
 // Dexie (free core) over IndexedDB. A pot is one row that holds the shrunk
 // photo as a Blob, so the record and its photo are written in one transaction.
@@ -280,6 +281,7 @@ export function editPot(potId, patch) {
       if (!pot) return;
       const next = { ...pot };
       for (const key of ['name', 'clay', 'notes']) if (typeof patch[key] === 'string') next[key] = patch[key].trim();
+      if ('weight' in patch) next.weight = parseWeight(patch.weight?.amount, patch.weight?.unit);
       await db.pots.put(stamp(next));
     }),
   );

@@ -8,6 +8,8 @@
   import { potNotes } from '../lib/stageEdit.js';
   import { glazeLine, layerDetail, layersToStack, nameLookup } from '../lib/glazes.js';
   import Silhouette from './Silhouette.svelte';
+  import WeightField from './WeightField.svelte';
+  import { parseWeight } from '../lib/weight.js';
 
   let { stages, glazes, potId, onback, onmove, onarchive, onrestore, askPhoto, onglazes } = $props();
 
@@ -56,6 +58,11 @@
 
   function savedText(field) {
     return (event) => editPot(potId, { [field]: event.currentTarget.value });
+  }
+
+  function savedWeight({ amount, unit }) {
+    const weight = parseWeight(amount, unit);
+    if (weight || pot.weight) editPot(potId, { weight });
   }
 
   function changeDate(entry, event) {
@@ -155,6 +162,7 @@
       <label class="field">Clay
         <input type="text" value={pot.clay || ''} placeholder="Clay type (optional)" onchange={savedText('clay')} autocomplete="off" />
       </label>
+      <WeightField amount={pot.weight?.amount ?? null} unit={pot.weight?.unit ?? null} label="Clay weight" onchange={savedWeight} />
       <label class="field">Notes
         <textarea rows="3" value={pot.notes || ''} placeholder="Notes (optional)" onchange={savedText('notes')}></textarea>
       </label>
