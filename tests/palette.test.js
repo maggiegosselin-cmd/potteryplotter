@@ -28,3 +28,10 @@ test('text fields keep a 2px ink line', () => {
   assert.match(css, /--ink-line: 2px;/);
   assert.match(css, /\.add input\[type='text'\][^{]*\{[^}]*border: var\(--ink-line\) solid var\(--ink\)/);
 });
+
+test('the install button is gold, and the body font is a bundled rounded sans-serif', () => {
+  assert.match(rule('.btn.gold'), /background: var\(--gold\);/);
+  assert.match(rule('.btn.gold:active'), /background: var\(--gold-press\);/);
+  assert.match(css, /--font-body: 'Nunito', ui-rounded, system-ui, sans-serif;/);
+  assert.match(rule('html'), /font-size: 100%;/);
+});
