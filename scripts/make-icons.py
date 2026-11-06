@@ -1,32 +1,50 @@
 """Writes the app icons in public/icons (pure Python, no image library).
 
-Palette: amber background, a dark-ink pot with a warm-paper mouth.
+Palette: amber background, a solid deep-purple mug (no black anywhere).
 """
 import struct
 import zlib
 
 AMBER = (0xFF, 0xBF, 0x00)
-PAPER = (0xF5, 0xF3, 0xDC)
-INK = (0x2B, 0x21, 0x1B)
+PURPLE = (0x6A, 0x3F, 0xA0)
 SAMPLES = 3  # SAMPLES x SAMPLES samples per pixel, for smooth edges
 
 
+def in_round_rect(x, y, x0, y0, x1, y1, r_base=0.0, r_right=0.0):
+    """True if (x, y) is inside the box.
+
+    r_base rounds both bottom corners; r_right rounds the two right-hand corners.
+    """
+    if not (x0 <= x <= x1 and y0 <= y <= y1):
+        return False
+    corners = (
+        (x0 + r_base, y1 - r_base, r_base, x < x0 + r_base and y > y1 - r_base),
+        (x1 - r_base, y1 - r_base, r_base, x > x1 - r_base and y > y1 - r_base),
+        (x1 - r_right, y0 + r_right, r_right, x > x1 - r_right and y < y0 + r_right),
+    )
+    if r_right:
+        # the right-hand corners are the rounded ones, not the base
+        corners = (
+            (x1 - r_right, y1 - r_right, r_right, x > x1 - r_right and y > y1 - r_right),
+            corners[2],
+        )
+    return all(not inside or (x - cx) ** 2 + (y - cy) ** 2 <= r ** 2 for cx, cy, r, inside in corners)
+
+
 def colour_at(x, y, k):
-    """x, y are in 0..1 units of the icon; k scales the glyph about the centre."""
+    """x, y are in 0..1 units of the icon; k scales the glyph about the centre.
+
+    The mug (body plus handle) spans x 0.215..0.785 and y 0.245..0.755, so it is centred.
+    """
     x = (x - 0.5) / k + 0.5
-    y = (y - 0.5) / k + 0.5 + 0.01  # the glyph spans y 0.22..0.80, so nudge it to the centre
-    body = 0.22 <= x <= 0.78 and 0.36 <= y <= 0.80
-    # round the bottom corners
-    if body and y > 0.66:
-        cx = 0.36 if x < 0.5 else 0.64
-        if abs(x - 0.5) > 0.14 and (x - cx) ** 2 + (y - 0.66) ** 2 > 0.14 ** 2:
-            body = False
-    neck = 0.34 <= x <= 0.66 and 0.22 <= y <= 0.38
-    if not (body or neck):
-        return AMBER
-    if 0.40 <= x <= 0.60 and 0.27 <= y <= 0.35:
-        return PAPER
-    return INK
+    y = (y - 0.5) / k + 0.5
+    # body: straight sides, open top, rounded base
+    body = in_round_rect(x, y, 0.215, 0.245, 0.615, 0.755, r_base=0.12)
+    # handle on the right: a rounded ring, its opening left as ground
+    outer = in_round_rect(x, y, 0.58, 0.32, 0.785, 0.57, r_right=0.08)
+    inner = in_round_rect(x, y, 0.58, 0.385, 0.715, 0.505, r_right=0.03)
+    handle = outer and not inner
+    return PURPLE if (body or handle) else AMBER
 
 
 def pixel(px, py, size, k):
