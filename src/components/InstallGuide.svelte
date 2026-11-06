@@ -56,7 +56,7 @@
       {/if}
 
       {#if step.install && $installPrompt}
-        <button class="btn" onclick={promptInstall}>{UI.install}</button>
+        <button class="btn secondary" onclick={promptInstall}>{UI.install}</button>
       {/if}
 
       <div class="guide-nav">

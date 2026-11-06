@@ -139,7 +139,7 @@
         {:else if selectedUrl}
           <img class="preview" src={selectedUrl} alt="Finished pot" />
         {/if}
-        <button class="btn" onclick={() => cameraInput.click()} disabled={step !== 'form'}>📷 Take the finished photo</button>
+        <button class="btn secondary" onclick={() => cameraInput.click()} disabled={step !== 'form'}>📷 Take the finished photo</button>
         <button class="btn secondary small" onclick={() => libraryInput.click()} disabled={step !== 'form'}>Choose from photos</button>
         <button class="link" onclick={useSample}>No camera? Use a test photo</button>
 

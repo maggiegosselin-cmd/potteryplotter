@@ -209,7 +209,7 @@
                   onmove: (v) => (dragging[pot.id] = v),
                 }}
               >
-                <Frame seed={pot.id} weight={selected.has(pot.id) ? 3 : 2} aspect={3} />
+                <Frame seed={pot.id} weight={1} aspect={3} />
                 <div class="photo" class:placeholder={!pot.url}>
                   {#if pot.url}
                     <img src={pot.url} alt="" loading="lazy" draggable="false" />
@@ -247,23 +247,20 @@
     {#if inArchive}
       <button class="btn wide" onclick={restoreSelected}>Restore ({picked.length})</button>
     {:else}
-      <button class="btn" disabled={toStaff.length === 0} onclick={() => moveSelected(toStaff)}>
+      <button class="btn secondary" disabled={toStaff.length === 0} onclick={() => moveSelected(toStaff)}>
         Waiting on staff{toStaff.length ? ` (${toStaff.length})` : ''}
       </button>
-      <button class="btn" disabled={afterHandIn.length === 0} onclick={() => moveSelected(afterHandIn)}>
+      <button class="btn secondary" disabled={afterHandIn.length === 0} onclick={() => moveSelected(afterHandIn)}>
         Into the kiln{afterHandIn.length ? ` (${afterHandIn.length})` : ''}
       </button>
       {#if allEnded}
         <button class="btn wide" onclick={archiveSelected}>Move to archive ({picked.length})</button>
       {/if}
     {/if}
-    <button class="btn secondary small" onclick={stopSelecting}>Cancel</button>
+    <button class="btn secondary small cancel" onclick={stopSelecting}>Cancel</button>
   </div>
 {:else}
   <div class="fab-bar">
-    <button class="btn add-btn framed" class:coach-ring={coach === 'add'} onclick={onadd}>
-      <Frame seed="add-a-pot" weight={3} aspect={6} />
-      ＋ Add a pot
-    </button>
+    <button class="btn add-btn" class:coach-ring={coach === 'add'} onclick={onadd}>＋ Add a pot</button>
   </div>
 {/if}

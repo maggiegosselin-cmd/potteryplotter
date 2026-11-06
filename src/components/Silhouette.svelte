@@ -1,7 +1,7 @@
 <script>
   import { BOX, fillTop, formOf } from '../lib/forms.js';
 
-  // A thin-lined pot that fills with blue-grey from the bottom as it advances. The form
+  // A thin-lined pot that fills with gold (lavender once the pot has ended) from the bottom as it advances. The form
   // (bowl or mug) comes from the pot's id; `form` overrides it, for the illustration.
   let { progress = 0, muted = false, size = 56, potId = '', form: given = null } = $props();
   const id = `fill-${Math.random().toString(36).slice(2, 8)}`;
@@ -21,9 +21,9 @@
 
 <style>
   .empty { fill: var(--cream); }
-  .full { fill: var(--blue-grey); }
+  .full { fill: var(--gold); }
   .line { fill: none; stroke: var(--ink); stroke-width: 2px; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
   .detail { stroke-width: 1.5px; }
-  .muted .full { fill: var(--sand-deep); }
+  .muted .full { fill: var(--lavender); }
   .muted .line { stroke: var(--ink-soft); }
 </style>
