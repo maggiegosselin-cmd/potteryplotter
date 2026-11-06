@@ -2,6 +2,7 @@
   import { installPrompt, promptInstall, copyLink } from '../lib/install.js';
   import { GUIDE, UI, WARNING } from '../content/guide.js';
   import PhoneMock from './PhoneMock.svelte';
+  import PotsIllustration from './PotsIllustration.svelte';
 
   // One full-screen card per step. `onlogHere` is given only when the guide stands in
   // front of the Add button on an iPhone browser tab: it adds the small "log anyway" link.
@@ -28,6 +29,7 @@
 <div class="add guide" role="dialog" aria-label="Install Pot Log">
   <div class="screen guide-screen">
     {#if warning}
+      <PotsIllustration height={88} />
       <h1>{WARNING.title}</h1>
       <p class="guide-text">{WARNING.text}</p>
       <button class="btn" onclick={() => (warning = false)}>{WARNING.install}</button>
@@ -41,6 +43,7 @@
       </div>
       <p class="sub">{UI.step(index + 1, steps.length)}</p>
 
+      {#if !step.mock}<PotsIllustration height={88} />{/if}
       <h1>{step.title}</h1>
       <p class="guide-text">{step.text}</p>
 
