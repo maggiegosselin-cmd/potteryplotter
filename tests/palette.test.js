@@ -4,9 +4,9 @@ import { readFileSync } from 'node:fs';
 
 const css = readFileSync(new URL('../src/app.css', import.meta.url), 'utf8');
 const rule = (selector) => {
-  const start = css.split('\n').find((line) => line.startsWith(`${selector} {`));
-  assert.ok(start, `rule ${selector} exists`);
-  return start;
+  const start = css.indexOf(`\n${selector} {`);
+  assert.ok(start >= 0, `rule ${selector} exists`);
+  return css.slice(start + 1, css.indexOf('}', start) + 1);
 };
 
 test('the palette tokens are the four fills on a lighter paper', () => {
