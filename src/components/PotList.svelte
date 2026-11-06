@@ -12,6 +12,7 @@
   import Silhouette from './Silhouette.svelte';
   import Frame from './Frame.svelte';
   import Illustration from './Illustration.svelte';
+  import { clayLine } from '../lib/weight.js';
 
   let { stages, notice = '', coach = null, onguide, onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished, onexport } = $props();
 
@@ -129,7 +130,7 @@
   {#if pots === null || pots.length > 0 || loadError}
     <Illustration />
   {/if}
-  <p class="sub">Grouped by stage, longest-waiting first. Swipe a card to move it on; press and hold to pick several.</p>
+  <p class="sub">Grouped by stage, longest-waiting first.</p>
 
   <CopyStatus />
 
@@ -221,7 +222,7 @@
                 <div class="info">
                   <div class="name">{pot.name || `Pot ${pot.id}`}</div>
                   <div class="stage">{stage?.label} · {daysLabel(daysInStage(pot))}</div>
-                  <div class="when">{inArchive ? `archived ${agoLabel(pot.archivedAt)} · ` : ''}added {agoLabel(pot.createdAt)}{pot.clay ? ` · ${pot.clay}` : ''}</div>
+                  <div class="when">{inArchive ? `archived ${agoLabel(pot.archivedAt)} · ` : ''}added {agoLabel(pot.createdAt)}{clayLine(pot) ? ` · ${clayLine(pot)}` : ''}</div>
                   {#if !selecting && !inArchive && canArchive(pot, stages)}
                     <button
                       class="card-btn"

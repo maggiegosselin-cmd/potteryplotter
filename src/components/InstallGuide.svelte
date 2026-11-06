@@ -41,7 +41,7 @@
         <button class="link" onclick={onclose}>{UI.notNow}</button>
       </div>
       <p class="sub">{UI.step(index + 1, steps.length)}</p>
-      <Illustration variant="small" />
+      <Illustration />
 
       <h1>{step.title}</h1>
       <p class="guide-text">{step.text}</p>

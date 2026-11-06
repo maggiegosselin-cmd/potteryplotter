@@ -1,9 +1,10 @@
 // Pure record logic for pots: no browser or Dexie APIs, so it runs in Node tests.
 //
 // A pot (version 2) is one row:
-//   { id, name, clay, notes, createdAt, photo|null, photoType, width, height,
+//   { id, name, clay, weight, notes, createdAt, photo|null, photoType, width, height,
 //     stage, stageSince, history: [entry, ...], archivedAt }
 // `archivedAt` is null, or the time an ended pot was moved to the archive. It is
+// `weight` is null or { amount, unit } (unit g or lb, see weight.js); older pots have none.
 // separate from the stage: an archived pot keeps its end state, photos and history.
 // Version 4 adds, to the same row, `glazeLayers` (see glazes.js: glaze ids in the
 // order they went on) and `finishedPhoto`, a Blob or null. `finishedFrom` says
@@ -18,6 +19,7 @@
 // stage and weeks of use are counted from occurredAt, never enteredAt.
 import { GLAZED_ID, WAITING_ID } from './stages.js';
 import { InputError, cleanLayers, usesGlaze } from './glazes.js';
+import { parseWeight } from './weight.js';
 
 export const DAY = 86_400_000;
 
@@ -60,7 +62,7 @@ export function earlierStages(stage, stages) {
 }
 
 /** A new pot at any stage; `earlier` maps earlier stage ids to the dates remembered (or null). */
-export function buildPot({ name, clay, notes, photo, width, height, stage, occurredAt, earlier = {}, now = Date.now(), stages }) {
+export function buildPot({ name, clay, weight, notes, photo, width, height, stage, occurredAt, earlier = {}, now = Date.now(), stages }) {
   if (!startStages(stages).some((s) => s.id === stage)) throw new RangeError(`Cannot start a pot at ${stage}`);
   const history = [];
   for (const s of earlierStages(stage, stages)) {
@@ -72,6 +74,7 @@ export function buildPot({ name, clay, notes, photo, width, height, stage, occur
     {
       name: (name || '').trim(),
       clay: (clay || '').trim(),
+      weight: weight ? parseWeight(weight.amount, weight.unit) : null,
       notes: (notes || '').trim(),
       createdAt: now,
       photo: photo || null,
@@ -366,6 +369,13 @@ const EXAMPLE_LOOKS = {
   'Egg cup': { layers: ['Tenmoku'] },
 };
 
+// Example pots that were weighed out as a lump of clay.
+const EXAMPLE_WEIGHTS = {
+  'Wedged lump': { amount: 500, unit: 'g' },
+  'Pinch bowl': { amount: 750, unit: 'g' },
+  'Tall mug': { amount: 2.5, unit: 'lb' },
+};
+
 /** Names of example pots that get a finished photo (the browser draws them). */
 export const examplePhotoNames = () => Object.keys(EXAMPLE_LOOKS).filter((n) => EXAMPLE_LOOKS[n].photo);
 
@@ -421,7 +431,7 @@ export function examplePots(stages, now = Date.now(), { glazeIds = {}, photos = 
     const finishedPhoto = photos[name] || null;
     return withCurrent(
       {
-        name, clay, notes: '', createdAt: entered, photo: null, photoType: '', width: 0, height: 0,
+        name, clay, weight: EXAMPLE_WEIGHTS[name] || null, notes: '', createdAt: entered, photo: null, photoType: '', width: 0, height: 0,
         archivedAt: archived ? now - 2 * DAY : null,
         glazeLayers,
         finishedPhoto,

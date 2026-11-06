@@ -7,6 +7,8 @@
   import { earlierStages, fromDateInput, isFinished, pathStages, startStages, toDateInput } from '../lib/pots.js';
   import { stackToLayers } from '../lib/glazes.js';
   import GlazePicker from './GlazePicker.svelte';
+  import WeightField from './WeightField.svelte';
+  import { parseWeight } from '../lib/weight.js';
   import FirstPotCoach from './FirstPotCoach.svelte';
   import { WARNING } from '../content/guide.js';
 
@@ -27,6 +29,7 @@
   let previewUrl = $state('');
   let name = $state('');
   let clay = $state('');
+  let weightInput = $state({ amount: '', unit: null }); // the clay weight as typed, offered at Lump of clay
   let notes = $state('');
   let stage = $state(startStage(stages));
   let when = $state(toDateInput(Date.now()));
@@ -130,6 +133,7 @@
       await savePot({
         name,
         clay,
+        weight: stage === 'lump' ? parseWeight(weightInput.amount, weightInput.unit) : null,
         notes,
         photo: photo?.blob,
         width: photo?.width,
@@ -191,6 +195,9 @@
     {/if}
 
     <input type="text" placeholder="Name (optional)" aria-label="Pot name" bind:value={name} autocomplete="off" />
+    {#if stage === 'lump'}
+      <WeightField amount={weightInput.amount} unit={weightInput.unit} onchange={(w) => (weightInput = w)} />
+    {/if}
     <input type="text" placeholder="Clay type (optional)" aria-label="Clay type" bind:value={clay} autocomplete="off" />
     <textarea rows="2" placeholder="Notes (optional)" aria-label="Notes" bind:value={notes}></textarea>
 

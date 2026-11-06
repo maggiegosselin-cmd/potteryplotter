@@ -62,7 +62,7 @@
     {#if pots === null}
       <p class="empty">Loading…</p>
     {:else if finished.length === 0}
-      <Illustration variant="small" />
+      <Illustration />
       <p class="empty">No finished pots yet. When a pot is finished, its photo and glazes show up here.</p>
     {:else}
       <p class="sub">
