@@ -24,14 +24,13 @@
   --r-chip: 26px 30px 24px 28px / 30px 24px 28px 26px;
   --r-card: 16px 20px 15px 19px / 19px 15px 20px 16px;
   --r-field: 14px 18px 13px 17px / 17px 13px 18px 14px;
-  --font-body: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-body: 'Nunito', ui-rounded, system-ui, sans-serif;
   font-family: var(--font-body);
   color: var(--ink);
   background: var(--paper);
 }
-/* EB Garamond has a small x-height: the root is raised to 125% so every rem size (small text
-   included) reads as large as the system font did, and the body is 1.2rem = 24px by default. */
-html { font-size: 125%; }
+/* Nunito has a normal x-height, so the root stays at the browser default and the body is 1.2rem = 19.2px. */
+html { font-size: 100%; }
 * { box-sizing: border-box; }
 body { margin: 0; font-size: 1.2rem; line-height: 1.3; }
 button, input, textarea { font: inherit; }
@@ -53,6 +52,8 @@ h1 { font-size: 1.6rem; margin: 0 0 12px; }
 .btn:disabled { opacity: .55; }
 .btn.secondary { background: var(--lavender); color: var(--ink); }
 .btn.secondary:active { background: var(--lavender-press); }
+.btn.gold { background: var(--gold); color: var(--ink); }
+.btn.gold:active { background: var(--gold-press); }
 .btn.small { min-height: 56px; font-size: 1.15rem; }
 .banner { background: var(--cream); border: var(--card-line) solid var(--line-soft); border-left: 8px solid var(--gold-deep); border-radius: var(--r-card); padding: 14px 16px; margin: 12px 0; }
 .banner.error { border-left-color: var(--bad); color: var(--bad); font-weight: 600; }

@@ -32,7 +32,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // woff2 is the bundled EB Garamond. The owner's illustration, public/art/pots.png, is a png, so it is
+        // woff2 is the bundled Nunito. The owner's illustration, public/art/pots.png, is a png, so it is
         // precached too when the file is there; the size cap is raised for a large drawing.
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,webmanifest}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
