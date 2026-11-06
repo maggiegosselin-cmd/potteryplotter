@@ -10,6 +10,8 @@
   import InstallHelp from './InstallHelp.svelte';
   import CopyStatus from './CopyStatus.svelte';
   import Silhouette from './Silhouette.svelte';
+  import Frame from './Frame.svelte';
+  import Illustration from './Illustration.svelte';
 
   let { stages, notice = '', coach = null, onguide, onadd, onopen, onstages, onmove, onarchive, onrestore, onfinished, onexport } = $props();
 
@@ -124,6 +126,9 @@
 
 <main class="screen" class:selecting>
   <h1>My pots</h1>
+  {#if pots === null || pots.length > 0 || loadError}
+    <Illustration />
+  {/if}
   <p class="sub">Grouped by stage, longest-waiting first. Swipe a card to move it on; press and hold to pick several.</p>
 
   <CopyStatus />
@@ -147,6 +152,7 @@
   {#if pots === null}
     <p class="empty">Loading…</p>
   {:else if pots.length === 0 && !loadError}
+    <Illustration />
     <p class="empty">No pots yet. Tap the big button to log your first one.</p>
     <button class="link center" onclick={() => addExamples()}>Or try it with some example pots</button>
   {:else}
@@ -186,7 +192,7 @@
             <li class="swipe-row" style:--pull={dragging[pot.id] || 0}>
               <div class="reveal" aria-hidden="true">{next ? `→ ${map.get(next).label}` : 'Nothing further'}</div>
               <div
-                class="card"
+                class="card framed"
                 class:selected={selected.has(pot.id)}
                 class:done={isDone(stage)}
                 class:coach-ring={coach === 'next' && pot.id === shown[0]?.id}
@@ -203,11 +209,12 @@
                   onmove: (v) => (dragging[pot.id] = v),
                 }}
               >
+                <Frame seed={pot.id} weight={1} aspect={3} />
                 <div class="photo" class:placeholder={!pot.url}>
                   {#if pot.url}
                     <img src={pot.url} alt="" loading="lazy" draggable="false" />
                   {:else}
-                    <Silhouette progress={1} size={64} muted />
+                    <Silhouette potId={pot.id} progress={1} size={64} muted />
                   {/if}
                   {#if selecting}<span class="tick">{selected.has(pot.id) ? '✓' : ''}</span>{/if}
                 </div>
@@ -224,7 +231,7 @@
                     >Move to archive</button>
                   {/if}
                 </div>
-                <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} />
+                <Silhouette potId={pot.id} progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} />
               </div>
             </li>
           {/each}
@@ -240,20 +247,20 @@
     {#if inArchive}
       <button class="btn wide" onclick={restoreSelected}>Restore ({picked.length})</button>
     {:else}
-      <button class="btn" disabled={toStaff.length === 0} onclick={() => moveSelected(toStaff)}>
+      <button class="btn secondary" disabled={toStaff.length === 0} onclick={() => moveSelected(toStaff)}>
         Waiting on staff{toStaff.length ? ` (${toStaff.length})` : ''}
       </button>
-      <button class="btn" disabled={afterHandIn.length === 0} onclick={() => moveSelected(afterHandIn)}>
+      <button class="btn secondary" disabled={afterHandIn.length === 0} onclick={() => moveSelected(afterHandIn)}>
         Into the kiln{afterHandIn.length ? ` (${afterHandIn.length})` : ''}
       </button>
       {#if allEnded}
         <button class="btn wide" onclick={archiveSelected}>Move to archive ({picked.length})</button>
       {/if}
     {/if}
-    <button class="btn secondary small" onclick={stopSelecting}>Cancel</button>
+    <button class="btn secondary small cancel" onclick={stopSelecting}>Cancel</button>
   </div>
 {:else}
   <div class="fab-bar">
-    <button class="btn" class:coach-ring={coach === 'add'} onclick={onadd}>＋ Add a pot</button>
+    <button class="btn add-btn" class:coach-ring={coach === 'add'} onclick={onadd}>＋ Add a pot</button>
   </div>
 {/if}

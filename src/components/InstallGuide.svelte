@@ -2,6 +2,7 @@
   import { installPrompt, promptInstall, copyLink } from '../lib/install.js';
   import { GUIDE, UI, WARNING } from '../content/guide.js';
   import PhoneMock from './PhoneMock.svelte';
+  import Illustration from './Illustration.svelte';
 
   // One full-screen card per step. `onlogHere` is given only when the guide stands in
   // front of the Add button on an iPhone browser tab: it adds the small "log anyway" link.
@@ -40,6 +41,7 @@
         <button class="link" onclick={onclose}>{UI.notNow}</button>
       </div>
       <p class="sub">{UI.step(index + 1, steps.length)}</p>
+      <Illustration variant="small" />
 
       <h1>{step.title}</h1>
       <p class="guide-text">{step.text}</p>
@@ -54,7 +56,7 @@
       {/if}
 
       {#if step.install && $installPrompt}
-        <button class="btn" onclick={promptInstall}>{UI.install}</button>
+        <button class="btn secondary" onclick={promptInstall}>{UI.install}</button>
       {/if}
 
       <div class="guide-nav">

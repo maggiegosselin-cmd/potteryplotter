@@ -1,24 +1,29 @@
 <script>
-  // A pot outline that fills with clay colour from the bottom as it advances.
-  let { progress = 0, muted = false, size = 56 } = $props();
+  import { BOX, fillTop, formOf } from '../lib/forms.js';
+
+  // A thin-lined pot that fills with gold (lavender once the pot has ended) from the bottom as it advances. The form
+  // (bowl or mug) comes from the pot's id; `form` overrides it, for the illustration.
+  let { progress = 0, muted = false, size = 56, potId = '', form: given = null } = $props();
   const id = `fill-${Math.random().toString(36).slice(2, 8)}`;
-  const outline = 'M22 6h20v8c0 4 12 8 12 24 0 14-8 20-22 20S10 52 10 38c0-16 12-20 12-24z';
-  const top = $derived(6 + 52 * (1 - Math.min(1, Math.max(0, progress))));
+  const form = $derived(given ?? formOf(potId));
+  const top = $derived(fillTop(form, progress));
 </script>
 
-<svg class="silhouette" class:muted viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
+<svg class="silhouette" class:muted viewBox="0 0 {BOX} {BOX}" width={size} height={size} aria-hidden="true">
   <defs>
-    <clipPath id={id}><rect x="0" y={top} width="64" height={64 - top} /></clipPath>
+    <clipPath id={id}><rect x="0" y={top} width={BOX} height={BOX - top} /></clipPath>
   </defs>
-  <path d={outline} class="empty" />
-  <path d={outline} class="full" clip-path="url(#{id})" />
-  <path d={outline} class="line" />
+  <path d={form.outline} class="empty" />
+  <path d={form.outline} class="full" clip-path="url(#{id})" />
+  <path d={form.outline} class="line" />
+  {#each form.details as d}<path {d} class="line detail" />{/each}
 </svg>
 
 <style>
-  .empty { fill: #eadbc3; }
-  .full { fill: var(--clay); }
-  .line { fill: none; stroke: var(--clay-dark); stroke-width: 2; stroke-linejoin: round; }
-  .muted .full { fill: #9a8c80; }
-  .muted .line { stroke: #6b5b50; }
+  .empty { fill: var(--cream); }
+  .full { fill: var(--gold); }
+  .line { fill: none; stroke: var(--ink); stroke-width: 2px; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .detail { stroke-width: 1.5px; }
+  .muted .full { fill: var(--lavender); }
+  .muted .line { stroke: var(--ink-soft); }
 </style>

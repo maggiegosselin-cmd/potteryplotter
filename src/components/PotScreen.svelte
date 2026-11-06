@@ -77,12 +77,12 @@
         {#if url}
           <img src={url} alt={pot.name || 'Pot photo'} />
         {:else}
-          <Silhouette progress={1} size={96} muted />
+          <Silhouette potId={pot.id} progress={1} size={96} muted />
         {/if}
       </div>
 
       <div class="status">
-        <Silhouette progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} size={48} />
+        <Silhouette potId={pot.id} progress={progressOf(pot, stages)} muted={stage?.kind === 'end'} size={48} />
         <div>
           <div class="stage-now">{stage?.label}</div>
           <div class="when">{daysLabel(daysInStage(pot))} in this stage</div>

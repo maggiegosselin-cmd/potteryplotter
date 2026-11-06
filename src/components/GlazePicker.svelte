@@ -139,7 +139,7 @@
       onkeydown={(e) => e.key === 'Enter' && (e.preventDefault(), addNew())}
       autocomplete="off"
     />
-    <button class="btn small" onclick={addNew}>Add</button>
+    <button class="btn secondary small" onclick={addNew}>Add</button>
   </div>
 
   {#if shelf.length}
