@@ -146,7 +146,13 @@
     </div>
   {/if}
 
-  <button class="btn secondary small" onclick={onstages}>My stages</button>
+  <div class="home-buttons">
+    <button class="btn secondary small" onclick={onstages}>My stages</button>
+    {#if pots !== null && (pots.length > 0 || loadError)}
+      <button class="btn secondary small" onclick={onfinished}>Finished pots</button>
+      <button class="btn secondary small" onclick={onexport}>Export all pots</button>
+    {/if}
+  </div>
 
   <InstallHelp {onguide} />
 
@@ -157,8 +163,6 @@
     <p class="empty">No pots yet. Tap the big button to log your first one.</p>
     <button class="link center" onclick={() => addExamples()}>Or try it with some example pots</button>
   {:else}
-    <button class="btn secondary small finished-link" onclick={onfinished}>🖼 Finished pots</button>
-    <button class="btn secondary small finished-link" onclick={onexport}>Export all pots</button>
     <div class="chips" role="group" aria-label="Show stage">
       <button class="chip" class:on={!filter} onclick={() => pick(null)}>All {active.length}</button>
       {#each chips as s (s.id)}
