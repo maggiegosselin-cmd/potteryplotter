@@ -214,7 +214,7 @@ h3 { font-size: 1.05rem; margin: 12px 0 2px; color: var(--accent-ink); }
 .gap, .flag { color: var(--bad); font-weight: 700; font-size: 1rem; margin: 4px 0; }
 
 /* Finished pots grid */
-.finished-link { margin-bottom: 8px; }
+.home-buttons { display: grid; gap: 12px; margin: 12px 0; }
 .grid { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .tile { background: var(--cream); border: var(--card-line) solid var(--line-soft); border-radius: var(--r-card); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
 .tile.incomplete { border-color: var(--bad); border-width: var(--ink-line); }
@@ -254,10 +254,8 @@ h3 { font-size: 1.05rem; margin: 12px 0 2px; color: var(--accent-ink); }
 @keyframes ring { 50% { outline-color: transparent; } }
 @media (prefers-reduced-motion: reduce) { .coach-ring { animation: none; } }
 
-/* Copy status in the header: how old the last copy on the server is */
-.copy-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 8px; font-size: 1rem; }
-.copy-age { color: var(--ok); font-weight: 600; }
-.copy-age.stale { color: var(--bad); }
+/* Copy status in the header: the move-to-a-new-phone link, right-aligned */
+.copy-status { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 4px 0 8px; font-size: 1rem; }
 .small-link { min-height: 44px; font-size: 1rem; }
 .banner.qr .qr-code { width: 220px; max-width: 100%; margin: 8px auto 0; background: #fff; }
 .export-counts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

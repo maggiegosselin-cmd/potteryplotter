@@ -23,10 +23,7 @@
   }
 </script>
 
-<div class="copy-status" role="status">
-  <span class="copy-age" class:stale={age.stale}>
-    {age.text}{#if $syncState.phase === 'copying'} · copying…{:else if $syncState.phase === 'offline'} · no signal{/if}
-  </span>
+<div class="copy-status">
   <button class="link small-link" onclick={toggleQr}>{qr ? 'Hide' : 'Move to a new phone'}</button>
 </div>
 {#if failed}
